@@ -74,29 +74,18 @@ pub fn index_many_mut<T, const N: usize>(slice: &mut [T], indices: [usize; N]) -
 pub trait SliceExt {
     type Item;
 
-    unsafe fn index_many_unchecked<'a, const N: usize>(
-        &'a self,
+    unsafe fn index_many_unchecked<const N: usize>(&self, indices: [usize; N]) -> [&Self::Item; N];
+    unsafe fn index_many_mut_unchecked<const N: usize>(
+        &mut self,
         indices: [usize; N],
-    ) -> [&'a Self::Item; N];
+    ) -> [&mut Self::Item; N];
 
-    unsafe fn index_many_mut_unchecked<'a, const N: usize>(
-        &'a mut self,
-        indices: [usize; N],
-    ) -> [&'a mut Self::Item; N];
+    fn get_many<const N: usize>(&self, indices: [usize; N]) -> Option<[&Self::Item; N]>;
+    fn get_many_mut<const N: usize>(&mut self, indices: [usize; N])
+        -> Option<[&mut Self::Item; N]>;
 
-    fn get_many<'a, const N: usize>(&'a self, indices: [usize; N]) -> Option<[&'a Self::Item; N]>;
-
-    fn get_many_mut<'a, const N: usize>(
-        &'a mut self,
-        indices: [usize; N],
-    ) -> Option<[&'a mut Self::Item; N]>;
-
-    fn index_many<'a, const N: usize>(&'a self, indices: [usize; N]) -> [&'a Self::Item; N];
-
-    fn index_many_mut<'a, const N: usize>(
-        &'a mut self,
-        indices: [usize; N],
-    ) -> [&'a mut Self::Item; N];
+    fn index_many<const N: usize>(&self, indices: [usize; N]) -> [&Self::Item; N];
+    fn index_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> [&mut Self::Item; N];
 }
 
 impl<T> SliceExt for [T] {
@@ -105,7 +94,6 @@ impl<T> SliceExt for [T] {
     unsafe fn index_many_unchecked<const N: usize>(&self, indices: [usize; N]) -> [&Self::Item; N] {
         index_many_unchecked(self, indices)
     }
-
     unsafe fn index_many_mut_unchecked<const N: usize>(
         &mut self,
         indices: [usize; N],
@@ -116,7 +104,6 @@ impl<T> SliceExt for [T] {
     fn get_many<const N: usize>(&self, indices: [usize; N]) -> Option<[&Self::Item; N]> {
         get_many(self, indices)
     }
-
     fn get_many_mut<const N: usize>(
         &mut self,
         indices: [usize; N],
@@ -127,7 +114,6 @@ impl<T> SliceExt for [T] {
     fn index_many<const N: usize>(&self, indices: [usize; N]) -> [&Self::Item; N] {
         index_many(self, indices)
     }
-
     fn index_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> [&mut Self::Item; N] {
         index_many_mut(self, indices)
     }
