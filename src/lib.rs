@@ -7,73 +7,22 @@ use std::mem::MaybeUninit;
 
 #[inline]
 fn check_indices_bool(indices: &[usize], len: usize) -> bool {
-    if let Some(&idx) = indices.get(0) {
-        if idx >= len {
-            return false;
-        }
-    }
+    let mut valid = true;
 
     let mut i = 1;
     while i < indices.len() {
         let a = indices[i - 1];
         let b = indices[i];
-        if a >= b {
-            return false;
-        }
-        if b >= len {
-            return false;
-        }
+        valid &= a < b;
         i += 1;
     }
 
-    true
-}
-
-/*
-
-#[inline(never)]
-fn check_indices_sorted_failed(indices: &[usize]) -> ! {
-    panic!(
-        "indices {:?} are not unique or sorted in ascending order",
-        indices
-    );
-}
-
-#[inline(never)]
-fn check_indices_bound_failed(idx: usize) -> ! {
-    panic!("index {} is out of bounds", idx);
-}
-
-#[inline]
-fn check_indices(indices: &[usize], len: usize) {
-    if let Some(&idx) = indices.get(0) {
-        if idx >= len {
-            check_indices_bound_failed(idx);
-        }
+    if let Some(&idx) = indices.last() {
+        valid &= idx < len;
     }
-    for &[a, b] in indices.array_windows() {
-        if a >= b {
-            check_indices_sorted_failed(&indices);
-        }
-        if b >= len {
-            check_indices_bound_failed(b);
-        }
-    }
-}
 
-pub fn index_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> [&'a T; N] {
-    check_indices(&indices, slice.len());
-    unsafe { index_many_unchecked(slice, indices) }
+    valid
 }
-
-pub fn index_many_mut<'a, T, const N: usize>(
-    slice: &'a mut [T],
-    indices: [usize; N],
-) -> [&'a mut T; N] {
-    check_indices(&indices, slice.len());
-    unsafe { index_many_mut_unchecked(slice, indices) }
-}
-*/
 
 pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
     slice: &'a [T],
