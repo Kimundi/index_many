@@ -12,13 +12,18 @@ fn check_indices_bool(indices: &[usize], len: usize) -> bool {
             return false;
         }
     }
-    for &[a, b] in indices.array_windows() {
+
+    let mut i = 1;
+    while i < indices.len() {
+        let a = indices[i - 1];
+        let b = indices[i];
         if a >= b {
             return false;
         }
         if b >= len {
             return false;
         }
+        i += 1;
     }
 
     true
