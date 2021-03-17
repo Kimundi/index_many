@@ -12,7 +12,7 @@ fn check_indices_sorted_failed(indices: &[usize]) -> ! {
 
 #[inline(never)]
 fn check_indices_bound_failed(max_idx: usize) -> ! {
-    panic!("at least index {} is out of bounds", max_idx);
+    panic!("index {} is out of bounds", max_idx);
 }
 
 #[inline]
