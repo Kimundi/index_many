@@ -34,13 +34,7 @@ fn check_indices(indices: &[usize], len: usize) {
 
 pub fn index_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> [&'a T; N] {
     check_indices(&indices, slice.len());
-    unsafe {
-        let mut arr: [*const T; N] = [std::ptr::null(); N];
-        for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
-            *dst = slice.get_unchecked(idx);
-        }
-        arr.map(|v| &*v)
-    }
+    unsafe { index_many_unchecked(slice, indices) }
 }
 
 pub fn index_many_mut<'a, T, const N: usize>(
@@ -48,13 +42,29 @@ pub fn index_many_mut<'a, T, const N: usize>(
     indices: [usize; N],
 ) -> [&'a mut T; N] {
     check_indices(&indices, slice.len());
-    unsafe {
-        let mut arr: [*mut T; N] = [std::ptr::null_mut(); N];
-        for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
-            *dst = slice.get_unchecked_mut(idx);
-        }
-        arr.map(|v| &mut *v)
+    unsafe { index_many_mut_unchecked(slice, indices) }
+}
+
+pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
+    slice: &'a [T],
+    indices: [usize; N],
+) -> [&'a T; N] {
+    let mut arr: [*const T; N] = [std::ptr::null(); N];
+    for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
+        *dst = slice.get_unchecked(idx);
     }
+    arr.map(|v| &*v)
+}
+
+pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
+    slice: &'a mut [T],
+    indices: [usize; N],
+) -> [&'a mut T; N] {
+    let mut arr: [*mut T; N] = [std::ptr::null_mut(); N];
+    for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
+        *dst = slice.get_unchecked_mut(idx);
+    }
+    arr.map(|v| &mut *v)
 }
 
 #[cfg(test)]
