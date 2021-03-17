@@ -6,7 +6,7 @@
 use std::mem::MaybeUninit;
 
 #[inline]
-fn check_indices_bool(indices: &[usize], len: usize) -> bool {
+fn check_indices_valid(indices: &[usize], len: usize) -> bool {
     let mut valid = true;
 
     for &[a, b] in indices.array_windows() {
@@ -24,11 +24,13 @@ pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
     slice: &'a [T],
     indices: [usize; N],
 ) -> [&'a T; N] {
-    let mut arr: [*const T; N] = [std::ptr::null(); N];
+    let mut arr: [MaybeUninit<&'a T>; N] = MaybeUninit::uninit_array::<N>();
+
     for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
-        *dst = slice.get_unchecked(idx);
+        dst.write(slice.get_unchecked(idx));
     }
-    arr.map(|v| &*v)
+
+    std::mem::transmute_copy::<_, [&'a T; N]>(&arr)
 }
 
 pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
@@ -45,7 +47,7 @@ pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
 }
 
 pub fn get_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> Option<[&'a T; N]> {
-    if !check_indices_bool(&indices, slice.len()) {
+    if !check_indices_valid(&indices, slice.len()) {
         return None;
     }
     unsafe { Some(index_many_unchecked(slice, indices)) }
@@ -55,7 +57,7 @@ pub fn get_many_mut<'a, T, const N: usize>(
     slice: &'a mut [T],
     indices: [usize; N],
 ) -> Option<[&'a mut T; N]> {
-    if !check_indices_bool(&indices, slice.len()) {
+    if !check_indices_valid(&indices, slice.len()) {
         return None;
     }
     unsafe { Some(index_many_mut_unchecked(slice, indices)) }
