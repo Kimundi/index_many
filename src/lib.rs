@@ -75,34 +75,6 @@ pub fn index_many_mut<'a, T, const N: usize>(
 }
 */
 
-pub fn index_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> [&'a T; N] {
-    get_many(slice, indices).unwrap()
-}
-
-pub fn index_many_mut<'a, T, const N: usize>(
-    slice: &'a mut [T],
-    indices: [usize; N],
-) -> [&'a mut T; N] {
-    get_many_mut(slice, indices).unwrap()
-}
-
-pub fn get_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> Option<[&'a T; N]> {
-    if !check_indices_bool(&indices, slice.len()) {
-        return None;
-    }
-    unsafe { Some(index_many_unchecked(slice, indices)) }
-}
-
-pub fn get_many_mut<'a, T, const N: usize>(
-    slice: &'a mut [T],
-    indices: [usize; N],
-) -> Option<[&'a mut T; N]> {
-    if !check_indices_bool(&indices, slice.len()) {
-        return None;
-    }
-    unsafe { Some(index_many_mut_unchecked(slice, indices)) }
-}
-
 pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
     slice: &'a [T],
     indices: [usize; N],
@@ -125,6 +97,34 @@ pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
     }
 
     std::mem::transmute_copy::<_, [&'a mut T; N]>(&arr)
+}
+
+pub fn get_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> Option<[&'a T; N]> {
+    if !check_indices_bool(&indices, slice.len()) {
+        return None;
+    }
+    unsafe { Some(index_many_unchecked(slice, indices)) }
+}
+
+pub fn get_many_mut<'a, T, const N: usize>(
+    slice: &'a mut [T],
+    indices: [usize; N],
+) -> Option<[&'a mut T; N]> {
+    if !check_indices_bool(&indices, slice.len()) {
+        return None;
+    }
+    unsafe { Some(index_many_mut_unchecked(slice, indices)) }
+}
+
+pub fn index_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> [&'a T; N] {
+    get_many(slice, indices).expect("indices not sorted or out of bounds")
+}
+
+pub fn index_many_mut<'a, T, const N: usize>(
+    slice: &'a mut [T],
+    indices: [usize; N],
+) -> [&'a mut T; N] {
+    get_many_mut(slice, indices).expect("indices not sorted or out of bounds")
 }
 
 #[cfg(test)]
