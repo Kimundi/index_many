@@ -19,22 +19,16 @@ fn check_indices_bound_failed(max_idx: usize) -> ! {
 fn check_indices(indices: &[usize], len: usize) {
     if let Some(&idx) = indices.get(0) {
         let mut max_idx = idx;
-        let mut sorted = true;
 
         for &[a, b] in indices.array_windows() {
             if a >= b {
-                sorted = false;
-                break;
+                check_indices_sorted_failed(&indices);
             }
             max_idx = b;
         }
 
         if max_idx >= len {
             check_indices_bound_failed(max_idx);
-        }
-
-        if !sorted {
-            check_indices_sorted_failed(&indices);
         }
     }
 }
@@ -102,14 +96,14 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "at least index 5 is out of bounds")]
     fn test_oob_nonempty() {
         let mut v = vec![1, 2, 3, 4, 5];
         index_many_mut(&mut v, [5]);
     }
 
     #[test]
-    #[should_panic]
+    #[should_panic(expected = "at least index 0 is out of bounds")]
     fn test_oob_empty() {
         let mut v: Vec<i32> = vec![];
         index_many_mut(&mut v, [0]);
