@@ -1,6 +1,9 @@
 #![feature(array_windows)]
 #![feature(array_map)]
 #![feature(maybe_uninit_extra)]
+#![feature(maybe_uninit_uninit_array)]
+
+use std::mem::MaybeUninit;
 
 #[inline(never)]
 fn check_indices_sorted_failed(indices: &[usize]) -> ! {
@@ -60,11 +63,13 @@ pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
     slice: &'a mut [T],
     indices: [usize; N],
 ) -> [&'a mut T; N] {
-    let mut arr: [*mut T; N] = [std::ptr::null_mut(); N];
+    let mut arr: [MaybeUninit<&'a mut T>; N] = MaybeUninit::uninit_array::<N>();
+
     for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
-        *dst = slice.get_unchecked_mut(idx);
+        dst.write(&mut *(slice.get_unchecked_mut(idx) as *mut _));
     }
-    arr.map(|v| &mut *v)
+
+    std::mem::transmute_copy::<_, [&'a mut T; N]>(&arr)
 }
 
 #[cfg(test)]
