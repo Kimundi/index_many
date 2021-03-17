@@ -5,30 +5,29 @@
 #[inline(never)]
 fn check_indices_sorted_failed(indices: &[usize]) -> ! {
     panic!(
-        "indices {:?} are not unique and sorted in ascending order",
+        "indices {:?} are not unique or sorted in ascending order",
         indices
     );
 }
 
 #[inline(never)]
-fn check_indices_bound_failed(max_idx: usize) -> ! {
-    panic!("index {} is out of bounds", max_idx);
+fn check_indices_bound_failed(idx: usize) -> ! {
+    panic!("index {} is out of bounds", idx);
 }
 
 #[inline]
 fn check_indices(indices: &[usize], len: usize) {
     if let Some(&idx) = indices.get(0) {
-        let mut max_idx = idx;
-
-        for &[a, b] in indices.array_windows() {
-            if a >= b {
-                check_indices_sorted_failed(&indices);
-            }
-            max_idx = b;
+        if idx >= len {
+            check_indices_bound_failed(idx);
         }
-
-        if max_idx >= len {
-            check_indices_bound_failed(max_idx);
+    }
+    for &[a, b] in indices.array_windows() {
+        if a >= b {
+            check_indices_sorted_failed(&indices);
+        }
+        if b >= len {
+            check_indices_bound_failed(b);
         }
     }
 }
@@ -96,16 +95,23 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "at least index 5 is out of bounds")]
+    #[should_panic(expected = "index 5 is out of bounds")]
     fn test_oob_nonempty() {
         let mut v = vec![1, 2, 3, 4, 5];
         index_many_mut(&mut v, [5]);
     }
 
     #[test]
-    #[should_panic(expected = "at least index 0 is out of bounds")]
+    #[should_panic(expected = "index 0 is out of bounds")]
     fn test_oob_empty() {
         let mut v: Vec<i32> = vec![];
         index_many_mut(&mut v, [0]);
+    }
+
+    #[test]
+    #[should_panic(expected = "indices [3, 1, 9] are not unique or sorted in ascending order")]
+    fn test_unsorted() {
+        let mut v = vec![1, 2, 3, 4, 5];
+        index_many_mut(&mut v, [3, 1, 9]);
     }
 }
