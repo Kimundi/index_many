@@ -5,6 +5,27 @@
 
 use std::mem::MaybeUninit;
 
+#[inline]
+fn check_indices_bool(indices: &[usize], len: usize) -> bool {
+    if let Some(&idx) = indices.get(0) {
+        if idx >= len {
+            return false;
+        }
+    }
+    for &[a, b] in indices.array_windows() {
+        if a >= b {
+            return false;
+        }
+        if b >= len {
+            return false;
+        }
+    }
+
+    true
+}
+
+/*
+
 #[inline(never)]
 fn check_indices_sorted_failed(indices: &[usize]) -> ! {
     panic!(
@@ -46,6 +67,35 @@ pub fn index_many_mut<'a, T, const N: usize>(
 ) -> [&'a mut T; N] {
     check_indices(&indices, slice.len());
     unsafe { index_many_mut_unchecked(slice, indices) }
+}
+*/
+
+pub fn index_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> [&'a T; N] {
+    get_many(slice, indices).unwrap()
+}
+
+pub fn index_many_mut<'a, T, const N: usize>(
+    slice: &'a mut [T],
+    indices: [usize; N],
+) -> [&'a mut T; N] {
+    get_many_mut(slice, indices).unwrap()
+}
+
+pub fn get_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> Option<[&'a T; N]> {
+    if !check_indices_bool(&indices, slice.len()) {
+        return None;
+    }
+    unsafe { Some(index_many_unchecked(slice, indices)) }
+}
+
+pub fn get_many_mut<'a, T, const N: usize>(
+    slice: &'a mut [T],
+    indices: [usize; N],
+) -> Option<[&'a mut T; N]> {
+    if !check_indices_bool(&indices, slice.len()) {
+        return None;
+    }
+    unsafe { Some(index_many_mut_unchecked(slice, indices)) }
 }
 
 pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
@@ -110,21 +160,24 @@ mod tests {
     }
 
     #[test]
-    #[should_panic(expected = "index 5 is out of bounds")]
+    // #[should_panic(expected = "index 5 is out of bounds")]
+    #[should_panic]
     fn test_oob_nonempty() {
         let mut v = vec![1, 2, 3, 4, 5];
         index_many_mut(&mut v, [5]);
     }
 
     #[test]
-    #[should_panic(expected = "index 0 is out of bounds")]
+    // #[should_panic(expected = "index 0 is out of bounds")]
+    #[should_panic]
     fn test_oob_empty() {
         let mut v: Vec<i32> = vec![];
         index_many_mut(&mut v, [0]);
     }
 
     #[test]
-    #[should_panic(expected = "indices [3, 1, 9] are not unique or sorted in ascending order")]
+    // #[should_panic(expected = "indices [3, 1, 9] are not unique or sorted in ascending order")]
+    #[should_panic]
     fn test_unsorted() {
         let mut v = vec![1, 2, 3, 4, 5];
         index_many_mut(&mut v, [3, 1, 9]);
