@@ -46,32 +46,91 @@ pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
     std::mem::transmute_copy::<_, [&'a mut T; N]>(&arr)
 }
 
-pub fn get_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> Option<[&'a T; N]> {
+pub fn get_many<T, const N: usize>(slice: &[T], indices: [usize; N]) -> Option<[&T; N]> {
     if !check_indices_valid(&indices, slice.len()) {
         return None;
     }
     unsafe { Some(index_many_unchecked(slice, indices)) }
 }
 
-pub fn get_many_mut<'a, T, const N: usize>(
-    slice: &'a mut [T],
+pub fn get_many_mut<T, const N: usize>(
+    slice: &mut [T],
     indices: [usize; N],
-) -> Option<[&'a mut T; N]> {
+) -> Option<[&mut T; N]> {
     if !check_indices_valid(&indices, slice.len()) {
         return None;
     }
     unsafe { Some(index_many_mut_unchecked(slice, indices)) }
 }
 
-pub fn index_many<'a, T, const N: usize>(slice: &'a [T], indices: [usize; N]) -> [&'a T; N] {
+pub fn index_many<T, const N: usize>(slice: &[T], indices: [usize; N]) -> [&T; N] {
     get_many(slice, indices).expect("indices not sorted or out of bounds")
 }
 
-pub fn index_many_mut<'a, T, const N: usize>(
-    slice: &'a mut [T],
-    indices: [usize; N],
-) -> [&'a mut T; N] {
+pub fn index_many_mut<T, const N: usize>(slice: &mut [T], indices: [usize; N]) -> [&mut T; N] {
     get_many_mut(slice, indices).expect("indices not sorted or out of bounds")
+}
+
+pub trait SliceExt {
+    type Item;
+
+    unsafe fn index_many_unchecked<'a, const N: usize>(
+        &'a self,
+        indices: [usize; N],
+    ) -> [&'a Self::Item; N];
+
+    unsafe fn index_many_mut_unchecked<'a, const N: usize>(
+        &'a mut self,
+        indices: [usize; N],
+    ) -> [&'a mut Self::Item; N];
+
+    fn get_many<'a, const N: usize>(&'a self, indices: [usize; N]) -> Option<[&'a Self::Item; N]>;
+
+    fn get_many_mut<'a, const N: usize>(
+        &'a mut self,
+        indices: [usize; N],
+    ) -> Option<[&'a mut Self::Item; N]>;
+
+    fn index_many<'a, const N: usize>(&'a self, indices: [usize; N]) -> [&'a Self::Item; N];
+
+    fn index_many_mut<'a, const N: usize>(
+        &'a mut self,
+        indices: [usize; N],
+    ) -> [&'a mut Self::Item; N];
+}
+
+impl<T> SliceExt for [T] {
+    type Item = T;
+
+    unsafe fn index_many_unchecked<const N: usize>(&self, indices: [usize; N]) -> [&Self::Item; N] {
+        index_many_unchecked(self, indices)
+    }
+
+    unsafe fn index_many_mut_unchecked<const N: usize>(
+        &mut self,
+        indices: [usize; N],
+    ) -> [&mut Self::Item; N] {
+        index_many_mut_unchecked(self, indices)
+    }
+
+    fn get_many<const N: usize>(&self, indices: [usize; N]) -> Option<[&Self::Item; N]> {
+        get_many(self, indices)
+    }
+
+    fn get_many_mut<const N: usize>(
+        &mut self,
+        indices: [usize; N],
+    ) -> Option<[&mut Self::Item; N]> {
+        get_many_mut(self, indices)
+    }
+
+    fn index_many<const N: usize>(&self, indices: [usize; N]) -> [&Self::Item; N] {
+        index_many(self, indices)
+    }
+
+    fn index_many_mut<const N: usize>(&mut self, indices: [usize; N]) -> [&mut Self::Item; N] {
+        index_many_mut(self, indices)
+    }
 }
 
 #[cfg(test)]
