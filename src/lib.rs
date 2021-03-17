@@ -9,12 +9,8 @@ use std::mem::MaybeUninit;
 fn check_indices_bool(indices: &[usize], len: usize) -> bool {
     let mut valid = true;
 
-    let mut i = 1;
-    while i < indices.len() {
-        let a = indices[i - 1];
-        let b = indices[i];
+    for &[a, b] in indices.array_windows() {
         valid &= a < b;
-        i += 1;
     }
 
     if let Some(&idx) = indices.last() {
