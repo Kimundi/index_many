@@ -25,13 +25,19 @@ unsafe fn index_many_internal<'a, T, const N: usize>(
     slice: *const [T],
     indices: [usize; N],
 ) -> [&'a T; N] {
-    let mut arr: [MaybeUninit<&'a T>; N] = MaybeUninit::uninit_array::<N>();
-
-    for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
-        dst.write((*slice).get_unchecked(idx));
+    let mut arr: MaybeUninit<[&'a T; N]> = MaybeUninit::uninit();
+    // Get a pointer to the first array element, for ease of writing to it by offset.
+    let arr_ptr = arr.as_mut_ptr() as *mut &'a T;
+    let mut i = 0;
+    // You can't beat `while i < N` for performance when `N` is a constant-generic parameter.
+    while i < N {
+        arr_ptr
+            .add(i)
+            .write(&*slice.get_unchecked(*indices.get_unchecked(i)));
+        i += 1;
     }
-
-    std::mem::transmute_copy::<_, [&'a T; N]>(&arr)
+    // All the elements in `arr` are now definitely initialized, so we can safely call `assume_init`.
+    arr.assume_init()
 }
 
 unsafe fn index_many_mut_internal<'a, T, const N: usize>(
