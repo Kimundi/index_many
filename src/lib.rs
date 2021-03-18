@@ -20,30 +20,44 @@ fn check_indices_valid(indices: &[usize], len: usize) -> bool {
     valid
 }
 
-pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
-    slice: &'a [T],
+unsafe fn index_many_internal<'a, T, const N: usize>(
+    slice: *const [T],
     indices: [usize; N],
 ) -> [&'a T; N] {
     let mut arr: [MaybeUninit<&'a T>; N] = MaybeUninit::uninit_array::<N>();
 
     for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
-        dst.write(slice.get_unchecked(idx));
+        dst.write((*slice).get_unchecked(idx));
     }
 
     std::mem::transmute_copy::<_, [&'a T; N]>(&arr)
+}
+
+unsafe fn index_many_mut_internal<'a, T, const N: usize>(
+    slice: *mut [T],
+    indices: [usize; N],
+) -> [&'a mut T; N] {
+    let mut arr: [MaybeUninit<&'a mut T>; N] = MaybeUninit::uninit_array::<N>();
+
+    for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
+        dst.write(&mut *((*slice).get_unchecked_mut(idx) as *mut _));
+    }
+
+    std::mem::transmute_copy::<_, [&'a mut T; N]>(&arr)
+}
+
+pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
+    slice: &'a [T],
+    indices: [usize; N],
+) -> [&'a T; N] {
+    index_many_internal(slice, indices)
 }
 
 pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
     slice: &'a mut [T],
     indices: [usize; N],
 ) -> [&'a mut T; N] {
-    let mut arr: [MaybeUninit<&'a mut T>; N] = MaybeUninit::uninit_array::<N>();
-
-    for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
-        dst.write(&mut *(slice.get_unchecked_mut(idx) as *mut _));
-    }
-
-    std::mem::transmute_copy::<_, [&'a mut T; N]>(&arr)
+    index_many_mut_internal(slice, indices)
 }
 
 pub fn get_many<T, const N: usize>(slice: &[T], indices: [usize; N]) -> Option<[&T; N]> {
