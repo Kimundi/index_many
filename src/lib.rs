@@ -2,6 +2,7 @@
 #![feature(array_map)]
 #![feature(maybe_uninit_extra)]
 #![feature(maybe_uninit_uninit_array)]
+#![feature(slice_ptr_get)]
 
 use std::mem::MaybeUninit;
 
@@ -37,13 +38,19 @@ unsafe fn index_many_mut_internal<'a, T, const N: usize>(
     slice: *mut [T],
     indices: [usize; N],
 ) -> [&'a mut T; N] {
-    let mut arr: [MaybeUninit<&'a mut T>; N] = MaybeUninit::uninit_array::<N>();
-
-    for (dst, idx) in arr.iter_mut().zip(indices.iter().copied()) {
-        dst.write(&mut *((*slice).get_unchecked_mut(idx) as *mut _));
+    let mut arr: MaybeUninit<[&'a mut T; N]> = MaybeUninit::uninit();
+    // Get a pointer to the first array element, for ease of writing to it by offset.
+    let arr_ptr = arr.as_mut_ptr() as *mut &'a mut T;
+    let mut i = 0;
+    // You can't beat `while i < N` for performance when `N` is a constant-generic parameter.
+    while i < N {
+        arr_ptr
+            .add(i)
+            .write(&mut *slice.get_unchecked_mut(*indices.get_unchecked(i)));
+        i += 1;
     }
-
-    std::mem::transmute_copy::<_, [&'a mut T; N]>(&arr)
+    // All the elements in `arr` are now definitely initialized, so we can safely call `assume_init`.
+    arr.assume_init()
 }
 
 pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
