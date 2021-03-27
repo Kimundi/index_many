@@ -1,14 +1,14 @@
-use std::{mem::MaybeUninit, ops::Deref};
+use std::ops::Deref;
 
 pub unsafe trait Indices<const N: usize> {
-    fn into_indices(self) -> [usize; N];
+    fn to_indices(&self) -> [usize; N];
     fn is_in_bounds(&self, len: usize) -> bool;
 }
 
 unsafe impl<const N: usize> Indices<N> for [usize; N] {
     #[inline]
-    fn into_indices(self) -> [usize; N] {
-        self
+    fn to_indices(&self) -> [usize; N] {
+        *self
     }
 
     #[inline]
@@ -59,7 +59,7 @@ impl<const N: usize> SortedIndices<N> {
 
 unsafe impl<const N: usize> Indices<N> for SortedIndices<N> {
     #[inline]
-    fn into_indices(self) -> [usize; N] {
+    fn to_indices(&self) -> [usize; N] {
         self.indices
     }
 
@@ -79,7 +79,7 @@ pub struct UnsortedIndices<const N: usize>(pub [usize; N]);
 
 unsafe impl<const N: usize> Indices<N> for UnsortedIndices<N> {
     #[inline]
-    fn into_indices(self) -> [usize; N] {
+    fn to_indices(&self) -> [usize; N] {
         self.0
     }
 
@@ -98,60 +98,18 @@ unsafe impl<const N: usize> Indices<N> for UnsortedIndices<N> {
     }
 }
 
-unsafe fn index_many_internal<'a, T, I: Indices<N>, const N: usize>(
-    slice: *const [T],
-    indices: I,
-) -> [&'a T; N] {
-    let indices = indices.into_indices();
-
-    let mut arr: MaybeUninit<[&'a T; N]> = MaybeUninit::uninit();
-    // Get a pointer to the first array element, for ease of writing to it by offset.
-    let arr_ptr = arr.as_mut_ptr() as *mut &'a T;
-    let mut i = 0;
-    // You can't beat `while i < N` for performance when `N` is a constant-generic parameter.
-    while i < N {
-        arr_ptr
-            .add(i)
-            .write(&*slice.get_unchecked(*indices.get_unchecked(i)));
-        i += 1;
-    }
-    // All the elements in `arr` are now definitely initialized, so we can safely call `assume_init`.
-    arr.assume_init()
-}
-
-unsafe fn index_many_mut_internal<'a, T, I: Indices<N>, const N: usize>(
-    slice: *mut [T],
-    indices: I,
-) -> [&'a mut T; N] {
-    let indices = indices.into_indices();
-
-    let mut arr: MaybeUninit<[&'a mut T; N]> = MaybeUninit::uninit();
-    // Get a pointer to the first array element, for ease of writing to it by offset.
-    let arr_ptr = arr.as_mut_ptr() as *mut &'a mut T;
-    let mut i = 0;
-    // You can't beat `while i < N` for performance when `N` is a constant-generic parameter.
-    while i < N {
-        arr_ptr
-            .add(i)
-            .write(&mut *slice.get_unchecked_mut(*indices.get_unchecked(i)));
-        i += 1;
-    }
-    // All the elements in `arr` are now definitely initialized, so we can safely call `assume_init`.
-    arr.assume_init()
-}
-
 pub unsafe fn index_many_unchecked<'a, T, I: Indices<N>, const N: usize>(
     slice: &'a [T],
     indices: I,
 ) -> [&'a T; N] {
-    index_many_internal(slice, indices)
+    crate::index_many_internal(slice, indices.to_indices())
 }
 
 pub unsafe fn index_many_mut_unchecked<'a, T, I: Indices<N>, const N: usize>(
     slice: &'a mut [T],
     indices: I,
 ) -> [&'a mut T; N] {
-    index_many_mut_internal(slice, indices)
+    crate::index_many_mut_internal(slice, indices.to_indices())
 }
 
 pub fn get_many<'a, T, I: Indices<N>, const N: usize>(slice: &[T], indices: I) -> Option<[&T; N]> {
@@ -172,14 +130,24 @@ pub fn get_many_mut<'a, T, I: Indices<N>, const N: usize>(
 }
 
 pub fn index_many<'a, T, I: Indices<N>, const N: usize>(slice: &[T], indices: I) -> [&T; N] {
-    get_many(slice, indices).expect("indices not sorted or out of bounds")
+    let len = slice.len();
+    let indices2 = indices.to_indices();
+    match get_many(slice, indices) {
+        Some(s) => s,
+        None => crate::sorted_bound_check_failed(&indices2, len),
+    }
 }
 
 pub fn index_many_mut<'a, T, I: Indices<N>, const N: usize>(
     slice: &mut [T],
     indices: I,
 ) -> [&mut T; N] {
-    get_many_mut(slice, indices).expect("indices not sorted or out of bounds")
+    let len = slice.len();
+    let indices2 = indices.to_indices();
+    match get_many_mut(slice, indices) {
+        Some(s) => s,
+        None => crate::sorted_bound_check_failed(&indices2, len),
+    }
 }
 
 pub trait SliceExt {

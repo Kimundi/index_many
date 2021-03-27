@@ -1,5 +1,3 @@
-use std::mem::MaybeUninit;
-
 #[inline]
 fn check_indices_valid(indices: &[usize], len: usize) -> bool {
     let mut valid = true;
@@ -15,56 +13,18 @@ fn check_indices_valid(indices: &[usize], len: usize) -> bool {
     valid
 }
 
-unsafe fn index_many_internal<'a, T, const N: usize>(
-    slice: *const [T],
-    indices: [usize; N],
-) -> [&'a T; N] {
-    let mut arr: MaybeUninit<[&'a T; N]> = MaybeUninit::uninit();
-    // Get a pointer to the first array element, for ease of writing to it by offset.
-    let arr_ptr = arr.as_mut_ptr() as *mut &'a T;
-    let mut i = 0;
-    // You can't beat `while i < N` for performance when `N` is a constant-generic parameter.
-    while i < N {
-        arr_ptr
-            .add(i)
-            .write(&*slice.get_unchecked(*indices.get_unchecked(i)));
-        i += 1;
-    }
-    // All the elements in `arr` are now definitely initialized, so we can safely call `assume_init`.
-    arr.assume_init()
-}
-
-unsafe fn index_many_mut_internal<'a, T, const N: usize>(
-    slice: *mut [T],
-    indices: [usize; N],
-) -> [&'a mut T; N] {
-    let mut arr: MaybeUninit<[&'a mut T; N]> = MaybeUninit::uninit();
-    // Get a pointer to the first array element, for ease of writing to it by offset.
-    let arr_ptr = arr.as_mut_ptr() as *mut &'a mut T;
-    let mut i = 0;
-    // You can't beat `while i < N` for performance when `N` is a constant-generic parameter.
-    while i < N {
-        arr_ptr
-            .add(i)
-            .write(&mut *slice.get_unchecked_mut(*indices.get_unchecked(i)));
-        i += 1;
-    }
-    // All the elements in `arr` are now definitely initialized, so we can safely call `assume_init`.
-    arr.assume_init()
-}
-
 pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
     slice: &'a [T],
     indices: [usize; N],
 ) -> [&'a T; N] {
-    index_many_internal(slice, indices)
+    crate::index_many_internal(slice, indices)
 }
 
 pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
     slice: &'a mut [T],
     indices: [usize; N],
 ) -> [&'a mut T; N] {
-    index_many_mut_internal(slice, indices)
+    crate::index_many_mut_internal(slice, indices)
 }
 
 pub fn get_many<'a, T, const N: usize>(slice: &[T], indices: [usize; N]) -> Option<[&T; N]> {
@@ -85,11 +45,19 @@ pub fn get_many_mut<'a, T, const N: usize>(
 }
 
 pub fn index_many<'a, T, const N: usize>(slice: &[T], indices: [usize; N]) -> [&T; N] {
-    get_many(slice, indices).expect("indices not sorted or out of bounds")
+    let len = slice.len();
+    match get_many(slice, indices) {
+        Some(s) => s,
+        None => crate::sorted_bound_check_failed(&indices, len),
+    }
 }
 
 pub fn index_many_mut<'a, T, const N: usize>(slice: &mut [T], indices: [usize; N]) -> [&mut T; N] {
-    get_many_mut(slice, indices).expect("indices not sorted or out of bounds")
+    let len = slice.len();
+    match get_many_mut(slice, indices) {
+        Some(s) => s,
+        None => crate::sorted_bound_check_failed(&indices, len),
+    }
 }
 
 pub trait SliceExt {
@@ -243,7 +211,7 @@ mod tests {
     }
 
     #[test]
-    // #[should_panic(expected = "indices [3, 1, 9] are not unique or sorted in ascending order")]
+    //#[should_panic(expected = "indices [3, 1, 9] are not unique or sorted in ascending order")]
     #[should_panic]
     fn test_mut_unsorted() {
         let mut v = vec![1, 2, 3, 4, 5];
