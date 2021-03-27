@@ -27,6 +27,7 @@ unsafe impl<const N: usize> Indices<N> for [usize; N] {
         valid
     }
 
+    #[inline(always)]
     fn cause_invalid_panic(&self, len: usize) -> ! {
         crate::sorted_bound_check_failed(self, len)
     }
@@ -80,6 +81,7 @@ unsafe impl<const N: usize> Indices<N> for SortedIndices<N> {
         valid
     }
 
+    #[inline(always)]
     fn cause_invalid_panic(&self, len: usize) -> ! {
         crate::bound_check_failed(&self.indices, len)
     }
@@ -108,6 +110,7 @@ unsafe impl<const N: usize> Indices<N> for UnsortedIndices<N> {
         valid
     }
 
+    #[inline(always)]
     fn cause_invalid_panic(&self, len: usize) -> ! {
         crate::bound_check_failed(&self.0, len)
     }
