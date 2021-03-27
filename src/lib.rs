@@ -1,6 +1,8 @@
 #![feature(array_windows)]
 #![feature(slice_ptr_get)]
 #![feature(is_sorted)]
+#![feature(external_doc)]
+#![doc(include = "../README.md")]
 
 use std::mem::MaybeUninit;
 
