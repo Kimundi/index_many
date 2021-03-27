@@ -134,7 +134,7 @@ mod tests {
     #[should_panic]
     fn test_mut_unsorted() {
         let mut v = vec![1, 2, 3, 4, 5];
-        index_many_mut(&mut v, [3, 1, 9]);
+        index_many_mut(&mut v, [3, 1, 4]);
     }
 
     #[test]
@@ -142,6 +142,6 @@ mod tests {
     #[should_panic]
     fn test_ref_unsorted() {
         let v = vec![1, 2, 3, 4, 5];
-        index_many(&v, [3, 1, 9]);
+        index_many(&v, [3, 1, 4]);
     }
 }
