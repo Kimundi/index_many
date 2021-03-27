@@ -1,4 +1,4 @@
-use std::{array::IntoIter, mem::MaybeUninit, ops::Deref};
+use std::{mem::MaybeUninit, ops::Deref};
 
 pub unsafe trait Indices<const N: usize> {
     fn into_indices(self) -> [usize; N];
