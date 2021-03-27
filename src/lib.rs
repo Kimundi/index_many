@@ -59,7 +59,7 @@ fn bound_check_failed(indices: &[usize], len: usize) -> ! {
             if idx == idx2 {
                 panic!(
                     "Index {} appears more than once (at position {} and {} of indices {:?})",
-                    idx, i, j, indices,
+                    idx, j, i, indices,
                 );
             }
         }
