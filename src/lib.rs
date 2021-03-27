@@ -3,6 +3,21 @@
 
 use std::mem::MaybeUninit;
 
+unsafe trait ManyIndices<const N: usize> {
+    fn into_indices(self) -> [usize; N];
+    fn is_in_bounds<T>(&self, slice: &[T]) -> bool;
+}
+
+unsafe impl<const N: usize> ManyIndices<N> for [usize; N] {
+    fn into_indices(self) -> [usize; N] {
+        self
+    }
+
+    fn is_in_bounds<T>(&self, slice: &[T]) -> bool {
+        check_indices_valid(self, slice.len())
+    }
+}
+
 #[inline]
 fn check_indices_valid(indices: &[usize], len: usize) -> bool {
     let mut valid = true;
