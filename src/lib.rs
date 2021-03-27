@@ -1,7 +1,4 @@
 #![feature(array_windows)]
-#![feature(array_map)]
-#![feature(maybe_uninit_extra)]
-#![feature(maybe_uninit_uninit_array)]
 #![feature(slice_ptr_get)]
 
 use std::mem::MaybeUninit;
