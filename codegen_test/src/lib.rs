@@ -29,9 +29,9 @@ pub unsafe fn index_many_mut_hardcoded_unchecked(
     index_many::generic::index_many_mut_unchecked(slice, indices)
 }
 
-pub fn index_many_mut_hardcoded_sorted(
+pub fn index_many_mut_hardcoded_presorted(
     slice: &mut [Elem],
-    indices: index_many::generic::SortedIndices<LEN>,
+    indices: index_many::generic::PresortedIndices<LEN>,
 ) -> [&mut Elem; LEN] {
     index_many::generic::index_many_mut(slice, indices)
 }
