@@ -2,7 +2,8 @@ use std::ops::Deref;
 
 pub unsafe trait Indices<const N: usize>: Copy {
     fn to_indices(&self) -> [usize; N];
-    fn is_in_bounds(&self, len: usize) -> bool;
+    fn is_valid(&self, len: usize) -> bool;
+    fn cause_invalid_panic(&self, len: usize) -> !;
 }
 
 unsafe impl<const N: usize> Indices<N> for [usize; N] {
@@ -12,7 +13,7 @@ unsafe impl<const N: usize> Indices<N> for [usize; N] {
     }
 
     #[inline]
-    fn is_in_bounds(&self, len: usize) -> bool {
+    fn is_valid(&self, len: usize) -> bool {
         let mut valid = true;
 
         for &[a, b] in self.array_windows() {
@@ -24,6 +25,10 @@ unsafe impl<const N: usize> Indices<N> for [usize; N] {
         }
 
         valid
+    }
+
+    fn cause_invalid_panic(&self, len: usize) -> ! {
+        crate::sorted_bound_check_failed(self, len)
     }
 }
 
@@ -65,7 +70,7 @@ unsafe impl<const N: usize> Indices<N> for SortedIndices<N> {
     }
 
     #[inline]
-    fn is_in_bounds(&self, len: usize) -> bool {
+    fn is_valid(&self, len: usize) -> bool {
         let mut valid = true;
 
         if let Some(&idx) = self.indices.last() {
@@ -73,6 +78,10 @@ unsafe impl<const N: usize> Indices<N> for SortedIndices<N> {
         }
 
         valid
+    }
+
+    fn cause_invalid_panic(&self, len: usize) -> ! {
+        crate::bound_check_failed(&self.indices, len)
     }
 }
 
@@ -86,7 +95,7 @@ unsafe impl<const N: usize> Indices<N> for UnsortedIndices<N> {
     }
 
     #[inline]
-    fn is_in_bounds(&self, len: usize) -> bool {
+    fn is_valid(&self, len: usize) -> bool {
         let mut valid = true;
 
         for (i, &idx) in self.0.iter().enumerate() {
@@ -97,6 +106,10 @@ unsafe impl<const N: usize> Indices<N> for UnsortedIndices<N> {
         }
 
         valid
+    }
+
+    fn cause_invalid_panic(&self, len: usize) -> ! {
+        crate::bound_check_failed(&self.0, len)
     }
 }
 
@@ -115,7 +128,7 @@ pub unsafe fn index_many_mut_unchecked<'a, T, I: Indices<N>, const N: usize>(
 }
 
 pub fn get_many<'a, T, I: Indices<N>, const N: usize>(slice: &[T], indices: I) -> Option<[&T; N]> {
-    if !indices.is_in_bounds(slice.len()) {
+    if !indices.is_valid(slice.len()) {
         return None;
     }
     unsafe { Some(index_many_unchecked(slice, indices)) }
@@ -125,7 +138,7 @@ pub fn get_many_mut<'a, T, I: Indices<N>, const N: usize>(
     slice: &mut [T],
     indices: I,
 ) -> Option<[&mut T; N]> {
-    if !indices.is_in_bounds(slice.len()) {
+    if !indices.is_valid(slice.len()) {
         return None;
     }
     unsafe { Some(index_many_mut_unchecked(slice, indices)) }
@@ -133,12 +146,11 @@ pub fn get_many_mut<'a, T, I: Indices<N>, const N: usize>(
 
 pub fn index_many<'a, T, I: Indices<N>, const N: usize>(slice: &[T], indices: I) -> [&T; N] {
     let len = slice.len();
-
     match get_many(slice, indices) {
         Some(s) => s,
         None => {
-            let tmp = indices.to_indices();
-            crate::sorted_bound_check_failed(&tmp, len)
+            let tmp = indices;
+            tmp.cause_invalid_panic(len)
         }
     }
 }
@@ -148,12 +160,11 @@ pub fn index_many_mut<'a, T, I: Indices<N>, const N: usize>(
     indices: I,
 ) -> [&mut T; N] {
     let len = slice.len();
-
     match get_many_mut(slice, indices) {
         Some(s) => s,
         None => {
-            let tmp = indices.to_indices();
-            crate::sorted_bound_check_failed(&tmp, len)
+            let tmp = indices;
+            tmp.cause_invalid_panic(len)
         }
     }
 }
