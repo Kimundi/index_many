@@ -1,4 +1,4 @@
-use std::{mem::MaybeUninit, ops::Deref};
+use std::{array::IntoIter, mem::MaybeUninit, ops::Deref};
 
 pub unsafe trait Indices<const N: usize> {
     fn into_indices(self) -> [usize; N];
@@ -69,6 +69,29 @@ unsafe impl<const N: usize> Indices<N> for SortedIndices<N> {
 
         if let Some(&idx) = self.indices.last() {
             valid &= idx < len;
+        }
+
+        valid
+    }
+}
+
+pub struct UnsortedIndices<const N: usize>(pub [usize; N]);
+
+unsafe impl<const N: usize> Indices<N> for UnsortedIndices<N> {
+    #[inline]
+    fn into_indices(self) -> [usize; N] {
+        self.0
+    }
+
+    #[inline]
+    fn is_in_bounds(&self, len: usize) -> bool {
+        let mut valid = true;
+
+        for (i, &idx) in self.0.iter().enumerate() {
+            valid &= idx < len;
+            for &idx2 in &self.0[..i] {
+                valid &= idx != idx2;
+            }
         }
 
         valid
