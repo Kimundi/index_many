@@ -141,7 +141,7 @@ mod tests {
 
     #[test]
     #[should_panic(
-        expected = "Index 5 is out of bounds of slice with len 5 (at position 0 of indices [5])"
+        expected = "Index 5 is out of bounds of slice with len 5 (indices [5], position 0)"
     )]
     fn test_mut_oob_nonempty() {
         let mut v = vec![1, 2, 3, 4, 5];
@@ -150,7 +150,7 @@ mod tests {
 
     #[test]
     #[should_panic(
-        expected = "Index 5 is out of bounds of slice with len 5 (at position 0 of indices [5])"
+        expected = "Index 5 is out of bounds of slice with len 5 (indices [5], position 0)"
     )]
     fn test_ref_oob_nonempty() {
         let v = vec![1, 2, 3, 4, 5];
@@ -159,7 +159,7 @@ mod tests {
 
     #[test]
     #[should_panic(
-        expected = "Index 0 is out of bounds of slice with len 0 (at position 0 of indices [0])"
+        expected = "Index 0 is out of bounds of slice with len 0 (indices [0], position 0)"
     )]
     fn test_mut_oob_empty() {
         let mut v: Vec<i32> = vec![];
@@ -168,7 +168,7 @@ mod tests {
 
     #[test]
     #[should_panic(
-        expected = "Index 0 is out of bounds of slice with len 0 (at position 0 of indices [0])"
+        expected = "Index 0 is out of bounds of slice with len 0 (indices [0], position 0)"
     )]
     fn test_ref_oob_empty() {
         let v: Vec<i32> = vec![];

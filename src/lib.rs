@@ -49,17 +49,19 @@ fn bound_check_failed(indices: &[usize], len: usize) -> ! {
     for (i, &idx) in indices.iter().enumerate() {
         if idx >= len {
             panic!(
-                "Index {} is out of bounds of slice with len {} (at position {} of indices {:?})",
-                idx, len, i, indices,
+                "Index {} is out of bounds of slice with len {} (indices {:?}, position {})",
+                idx, len, indices, i,
             );
         }
+    }
 
-        // TODO: We might want to use a linear-time algorithm here instead
+    // TODO: We might want to use a linear-time algorithm here instead
+    for (i, &idx) in indices.iter().enumerate() {
         for (j, &idx2) in indices[..i].iter().enumerate() {
             if idx == idx2 {
                 panic!(
-                    "Index {} appears more than once (at position {} and {} of indices {:?})",
-                    idx, j, i, indices,
+                    "Index {} appears more than once (indices {:?}, position {} and {})",
+                    idx, indices, j, i,
                 );
             }
         }
