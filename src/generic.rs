@@ -1,6 +1,6 @@
 use std::ops::Deref;
 
-pub unsafe trait Indices<const N: usize> {
+pub unsafe trait Indices<const N: usize>: Copy {
     fn to_indices(&self) -> [usize; N];
     fn is_in_bounds(&self, len: usize) -> bool;
 }
@@ -27,6 +27,7 @@ unsafe impl<const N: usize> Indices<N> for [usize; N] {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct SortedIndices<const N: usize> {
     indices: [usize; N],
 }
@@ -75,6 +76,7 @@ unsafe impl<const N: usize> Indices<N> for SortedIndices<N> {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct UnsortedIndices<const N: usize>(pub [usize; N]);
 
 unsafe impl<const N: usize> Indices<N> for UnsortedIndices<N> {
@@ -131,10 +133,13 @@ pub fn get_many_mut<'a, T, I: Indices<N>, const N: usize>(
 
 pub fn index_many<'a, T, I: Indices<N>, const N: usize>(slice: &[T], indices: I) -> [&T; N] {
     let len = slice.len();
-    let indices2 = indices.to_indices();
+
     match get_many(slice, indices) {
         Some(s) => s,
-        None => crate::sorted_bound_check_failed(&indices2, len),
+        None => {
+            let tmp = indices.to_indices();
+            crate::sorted_bound_check_failed(&tmp, len)
+        }
     }
 }
 
@@ -143,10 +148,13 @@ pub fn index_many_mut<'a, T, I: Indices<N>, const N: usize>(
     indices: I,
 ) -> [&mut T; N] {
     let len = slice.len();
-    let indices2 = indices.to_indices();
+
     match get_many_mut(slice, indices) {
         Some(s) => s,
-        None => crate::sorted_bound_check_failed(&indices2, len),
+        None => {
+            let tmp = indices.to_indices();
+            crate::sorted_bound_check_failed(&tmp, len)
+        }
     }
 }
 

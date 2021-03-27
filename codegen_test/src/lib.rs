@@ -31,14 +31,14 @@ pub unsafe fn index_many_mut_hardcoded_unchecked(
 
 pub fn index_many_mut_hardcoded_sorted(
     slice: &mut [Elem],
-    indices: index_many::generic::SortedIndices<3>,
+    indices: index_many::generic::SortedIndices<LEN>,
 ) -> [&mut Elem; LEN] {
     index_many::generic::index_many_mut(slice, indices)
 }
 
 pub fn index_many_mut_hardcoded_unsorted(
     slice: &mut [Elem],
-    indices: index_many::generic::UnsortedIndices<3>,
+    indices: index_many::generic::UnsortedIndices<LEN>,
 ) -> [&mut Elem; LEN] {
     index_many::generic::index_many_mut(slice, indices)
 }

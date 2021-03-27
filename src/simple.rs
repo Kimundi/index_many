@@ -48,7 +48,10 @@ pub fn index_many<'a, T, const N: usize>(slice: &[T], indices: [usize; N]) -> [&
     let len = slice.len();
     match get_many(slice, indices) {
         Some(s) => s,
-        None => crate::sorted_bound_check_failed(&indices, len),
+        None => {
+            let tmp = indices;
+            crate::sorted_bound_check_failed(&tmp, len)
+        }
     }
 }
 
@@ -56,7 +59,10 @@ pub fn index_many_mut<'a, T, const N: usize>(slice: &mut [T], indices: [usize; N
     let len = slice.len();
     match get_many_mut(slice, indices) {
         Some(s) => s,
-        None => crate::sorted_bound_check_failed(&indices, len),
+        None => {
+            let tmp = indices;
+            crate::sorted_bound_check_failed(&tmp, len)
+        }
     }
 }
 
