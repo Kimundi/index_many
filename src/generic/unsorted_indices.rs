@@ -5,7 +5,7 @@ pub struct UnsortedIndices<const N: usize>(pub [usize; N]);
 
 unsafe impl<const N: usize> Indices<N> for UnsortedIndices<N> {
     #[inline]
-    fn to_indices(&self) -> [usize; N] {
+    fn to_raw_indices(&self) -> [usize; N] {
         self.0
     }
 

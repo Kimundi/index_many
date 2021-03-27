@@ -2,7 +2,7 @@ use super::Indices;
 
 unsafe impl<const N: usize> Indices<N> for [usize; N] {
     #[inline]
-    fn to_indices(&self) -> [usize; N] {
+    fn to_raw_indices(&self) -> [usize; N] {
         *self
     }
 
