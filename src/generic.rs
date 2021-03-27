@@ -1,33 +1,78 @@
-use std::mem::MaybeUninit;
+use std::{mem::MaybeUninit, ops::Deref};
 
 pub unsafe trait Indices<const N: usize> {
     fn into_indices(self) -> [usize; N];
-    fn is_in_bounds<T>(&self, slice: &[T]) -> bool;
+    fn is_in_bounds(&self, len: usize) -> bool;
 }
 
 unsafe impl<const N: usize> Indices<N> for [usize; N] {
+    #[inline]
     fn into_indices(self) -> [usize; N] {
         self
     }
 
-    fn is_in_bounds<T>(&self, slice: &[T]) -> bool {
-        check_indices_valid(self, slice.len())
+    #[inline]
+    fn is_in_bounds(&self, len: usize) -> bool {
+        let mut valid = true;
+
+        for &[a, b] in self.array_windows() {
+            valid &= a < b;
+        }
+
+        if let Some(&idx) = self.last() {
+            valid &= idx < len;
+        }
+
+        valid
     }
 }
 
-#[inline]
-fn check_indices_valid(indices: &[usize], len: usize) -> bool {
-    let mut valid = true;
+pub struct SortedIndices<const N: usize> {
+    indices: [usize; N],
+}
 
-    for &[a, b] in indices.array_windows() {
-        valid &= a < b;
+impl<const N: usize> Deref for SortedIndices<N> {
+    type Target = [usize; N];
+
+    fn deref(&self) -> &Self::Target {
+        &self.indices
+    }
+}
+
+pub struct SortedIndicesError {
+    _private: (),
+}
+
+impl<const N: usize> SortedIndices<N> {
+    pub fn new(indices: [usize; N]) -> Result<Self, SortedIndicesError> {
+        let mut valid = true;
+        for &[a, b] in indices.array_windows() {
+            valid &= a < b;
+        }
+        if valid {
+            Ok(Self { indices })
+        } else {
+            Err(SortedIndicesError { _private: () })
+        }
+    }
+}
+
+unsafe impl<const N: usize> Indices<N> for SortedIndices<N> {
+    #[inline]
+    fn into_indices(self) -> [usize; N] {
+        self.indices
     }
 
-    if let Some(&idx) = indices.last() {
-        valid &= idx < len;
-    }
+    #[inline]
+    fn is_in_bounds(&self, len: usize) -> bool {
+        let mut valid = true;
 
-    valid
+        if let Some(&idx) = self.indices.last() {
+            valid &= idx < len;
+        }
+
+        valid
+    }
 }
 
 unsafe fn index_many_internal<'a, T, I: Indices<N>, const N: usize>(
@@ -87,7 +132,7 @@ pub unsafe fn index_many_mut_unchecked<'a, T, I: Indices<N>, const N: usize>(
 }
 
 pub fn get_many<'a, T, I: Indices<N>, const N: usize>(slice: &[T], indices: I) -> Option<[&T; N]> {
-    if !indices.is_in_bounds(slice) {
+    if !indices.is_in_bounds(slice.len()) {
         return None;
     }
     unsafe { Some(index_many_unchecked(slice, indices)) }
@@ -97,7 +142,7 @@ pub fn get_many_mut<'a, T, I: Indices<N>, const N: usize>(
     slice: &mut [T],
     indices: I,
 ) -> Option<[&mut T; N]> {
-    if !indices.is_in_bounds(slice) {
+    if !indices.is_in_bounds(slice.len()) {
         return None;
     }
     unsafe { Some(index_many_mut_unchecked(slice, indices)) }
