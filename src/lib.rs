@@ -46,8 +46,28 @@ unsafe fn index_many_mut_internal<'a, T, const N: usize>(
 }
 
 fn bound_check_failed(indices: &[usize], len: usize) -> ! {
+    for (i, &idx) in indices.iter().enumerate() {
+        if idx >= len {
+            panic!(
+                "Index {} is out of bounds of slice with len {} (at position {} of indices {:?})",
+                idx, len, i, indices,
+            );
+        }
+
+        // TODO: We might want to use a linear-time algorithm here instead
+        for (j, &idx2) in indices[..i].iter().enumerate() {
+            if idx == idx2 {
+                panic!(
+                    "Index {} appears more than once (at position {} and {} of indices {:?})",
+                    idx, i, j, indices,
+                );
+            }
+        }
+    }
+
+    // Fallthrough case
     panic!(
-        "Indices {:?} are not all in bound of slice with len {}",
+        "Indices {:?} are invalid for a slice with len {}",
         indices, len
     );
 }
