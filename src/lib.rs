@@ -2,34 +2,34 @@
 #![feature(slice_ptr_get)]
 #![feature(is_sorted)]
 #![feature(external_doc)]
+#![feature(unchecked_math)]
 #![doc(include = "../README.md")]
 
-use std::mem::MaybeUninit;
+use std::{array::IntoIter, mem::MaybeUninit, slice::SliceIndex};
 
 pub mod generic;
 pub mod simple;
+pub mod slice_index;
 
-unsafe fn index_many_internal<'a, T, const N: usize>(
+unsafe fn get_many_internal<'a, T, I: SliceIndex<[T]>, const N: usize>(
     slice: *const [T],
-    indices: [usize; N],
-) -> [&'a T; N] {
-    let mut arr: MaybeUninit<[&'a T; N]> = MaybeUninit::uninit();
+    indices: [I; N],
+) -> [&'a I::Output; N] {
+    let mut arr: MaybeUninit<[&'a I::Output; N]> = MaybeUninit::uninit();
     let arr_ptr = arr.as_mut_ptr();
-    for i in 0..N {
-        let idx = *indices.get_unchecked(i);
+    for (i, idx) in IntoIter::new(indices).enumerate() {
         *(*arr_ptr).get_unchecked_mut(i) = &*slice.get_unchecked(idx);
     }
     arr.assume_init()
 }
 
-unsafe fn index_many_mut_internal<'a, T, const N: usize>(
+unsafe fn get_many_internal_mut<'a, T, I: SliceIndex<[T]>, const N: usize>(
     slice: *mut [T],
-    indices: [usize; N],
-) -> [&'a mut T; N] {
-    let mut arr: MaybeUninit<[&'a mut T; N]> = MaybeUninit::uninit();
+    indices: [I; N],
+) -> [&'a mut I::Output; N] {
+    let mut arr: MaybeUninit<[&'a mut I::Output; N]> = MaybeUninit::uninit();
     let arr_ptr = arr.as_mut_ptr();
-    for i in 0..N {
-        let idx = *indices.get_unchecked(i);
+    for (i, idx) in IntoIter::new(indices).enumerate() {
         *(*arr_ptr).get_unchecked_mut(i) = &mut *slice.get_unchecked_mut(idx);
     }
     arr.assume_init()

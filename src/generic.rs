@@ -24,14 +24,14 @@ pub unsafe fn index_many_unchecked<'a, T, I: Indices<N>, const N: usize>(
     slice: &'a [T],
     indices: I,
 ) -> [&'a T; N] {
-    crate::index_many_internal(slice, indices.to_raw_indices())
+    crate::get_many_internal(slice, indices.to_raw_indices())
 }
 
 pub unsafe fn index_many_mut_unchecked<'a, T, I: Indices<N>, const N: usize>(
     slice: &'a mut [T],
     indices: I,
 ) -> [&'a mut T; N] {
-    crate::index_many_mut_internal(slice, indices.to_raw_indices())
+    crate::get_many_internal_mut(slice, indices.to_raw_indices())
 }
 
 pub fn get_many<'a, T, I: Indices<N>, const N: usize>(slice: &[T], indices: I) -> Option<[&T; N]> {
@@ -73,65 +73,5 @@ pub fn index_many_mut<'a, T, I: Indices<N>, const N: usize>(
             let tmp = indices;
             tmp.cause_invalid_panic(len)
         }
-    }
-}
-
-pub trait SliceExt {
-    type Item;
-
-    unsafe fn index_many_unchecked<I: Indices<N>, const N: usize>(
-        &self,
-        indices: I,
-    ) -> [&Self::Item; N];
-    unsafe fn index_many_mut_unchecked<I: Indices<N>, const N: usize>(
-        &mut self,
-        indices: I,
-    ) -> [&mut Self::Item; N];
-
-    fn get_many<I: Indices<N>, const N: usize>(&self, indices: I) -> Option<[&Self::Item; N]>;
-    fn get_many_mut<I: Indices<N>, const N: usize>(
-        &mut self,
-        indices: I,
-    ) -> Option<[&mut Self::Item; N]>;
-
-    fn index_many<I: Indices<N>, const N: usize>(&self, indices: I) -> [&Self::Item; N];
-    fn index_many_mut<I: Indices<N>, const N: usize>(&mut self, indices: I)
-        -> [&mut Self::Item; N];
-}
-
-impl<T> SliceExt for [T] {
-    type Item = T;
-
-    unsafe fn index_many_unchecked<I: Indices<N>, const N: usize>(
-        &self,
-        indices: I,
-    ) -> [&Self::Item; N] {
-        index_many_unchecked(self, indices)
-    }
-    unsafe fn index_many_mut_unchecked<I: Indices<N>, const N: usize>(
-        &mut self,
-        indices: I,
-    ) -> [&mut Self::Item; N] {
-        index_many_mut_unchecked(self, indices)
-    }
-
-    fn get_many<I: Indices<N>, const N: usize>(&self, indices: I) -> Option<[&Self::Item; N]> {
-        get_many(self, indices)
-    }
-    fn get_many_mut<I: Indices<N>, const N: usize>(
-        &mut self,
-        indices: I,
-    ) -> Option<[&mut Self::Item; N]> {
-        get_many_mut(self, indices)
-    }
-
-    fn index_many<I: Indices<N>, const N: usize>(&self, indices: I) -> [&Self::Item; N] {
-        index_many(self, indices)
-    }
-    fn index_many_mut<I: Indices<N>, const N: usize>(
-        &mut self,
-        indices: I,
-    ) -> [&mut Self::Item; N] {
-        index_many_mut(self, indices)
     }
 }

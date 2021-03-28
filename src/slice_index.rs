@@ -3,72 +3,62 @@
 //! The array has to be sorted, and each element unique. This ensures that
 //! only `N` comparisons are needed at runtime to verify the indices are in bounds.
 
-#[inline]
-fn check_indices_valid(indices: &[usize], len: usize) -> bool {
-    let mut valid = true;
+mod ranges;
+mod single_usize;
 
-    for &[a, b] in indices.array_windows() {
-        valid &= a < b;
-    }
+pub trait SliceIndices<T: ?Sized, const N: usize>: Sized {
+    type Output: ?Sized;
 
-    if let Some(&idx) = indices.last() {
-        valid &= idx < len;
-    }
+    unsafe fn get_many_unchecked(this: [Self; N], slice: &T) -> [&Self::Output; N];
+    unsafe fn get_many_unchecked_mut(this: [Self; N], slice: &mut T) -> [&mut Self::Output; N];
 
-    valid
+    fn get_many(this: [Self; N], slice: &T) -> Option<[&Self::Output; N]>;
+    fn get_many_mut(this: [Self; N], slice: &mut T) -> Option<[&mut Self::Output; N]>;
+
+    fn index_many(this: [Self; N], slice: &T) -> [&Self::Output; N];
+    fn index_many_mut(this: [Self; N], slice: &mut T) -> [&mut Self::Output; N];
 }
 
-pub unsafe fn index_many_unchecked<'a, T, const N: usize>(
+pub unsafe fn get_many_unchecked<'a, T, I: SliceIndices<[T], N>, const N: usize>(
     slice: &'a [T],
-    indices: [usize; N],
-) -> [&'a T; N] {
-    crate::get_many_internal(slice, indices)
+    indices: [I; N],
+) -> [&'a I::Output; N] {
+    I::get_many_unchecked(indices, slice)
 }
 
-pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
+pub unsafe fn get_many_unchecked_mut<'a, T, I: SliceIndices<[T], N>, const N: usize>(
     slice: &'a mut [T],
-    indices: [usize; N],
-) -> [&'a mut T; N] {
-    crate::get_many_internal_mut(slice, indices)
+    indices: [I; N],
+) -> [&'a mut I::Output; N] {
+    I::get_many_unchecked_mut(indices, slice)
 }
 
-pub fn get_many<'a, T, const N: usize>(slice: &[T], indices: [usize; N]) -> Option<[&T; N]> {
-    if !check_indices_valid(&indices, slice.len()) {
-        return None;
-    }
-    unsafe { Some(index_many_unchecked(slice, indices)) }
+pub fn get_many<'a, T, I: SliceIndices<[T], N>, const N: usize>(
+    slice: &[T],
+    indices: [I; N],
+) -> Option<[&I::Output; N]> {
+    I::get_many(indices, slice)
 }
 
-pub fn get_many_mut<'a, T, const N: usize>(
+pub fn get_many_mut<'a, T, I: SliceIndices<[T], N>, const N: usize>(
     slice: &mut [T],
-    indices: [usize; N],
-) -> Option<[&mut T; N]> {
-    if !check_indices_valid(&indices, slice.len()) {
-        return None;
-    }
-    unsafe { Some(index_many_mut_unchecked(slice, indices)) }
+    indices: [I; N],
+) -> Option<[&mut I::Output; N]> {
+    I::get_many_mut(indices, slice)
 }
 
-pub fn index_many<'a, T, const N: usize>(slice: &[T], indices: [usize; N]) -> [&T; N] {
-    let len = slice.len();
-    match get_many(slice, indices) {
-        Some(s) => s,
-        None => {
-            let tmp = indices;
-            crate::sorted_bound_check_failed(&tmp, len)
-        }
-    }
+pub fn index_many<'a, T, I: SliceIndices<[T], N>, const N: usize>(
+    slice: &[T],
+    indices: [I; N],
+) -> [&I::Output; N] {
+    I::index_many(indices, slice)
 }
 
-pub fn index_many_mut<'a, T, const N: usize>(slice: &mut [T], indices: [usize; N]) -> [&mut T; N] {
-    let len = slice.len();
-    match get_many_mut(slice, indices) {
-        Some(s) => s,
-        None => {
-            let tmp = indices;
-            crate::sorted_bound_check_failed(&tmp, len)
-        }
-    }
+pub fn index_many_mut<'a, T, I: SliceIndices<[T], N>, const N: usize>(
+    slice: &mut [T],
+    indices: [I; N],
+) -> [&mut I::Output; N] {
+    I::index_many_mut(indices, slice)
 }
 
 #[cfg(test)]
@@ -98,14 +88,14 @@ mod tests {
     #[test]
     fn test_mut_empty() {
         let mut v = vec![1, 2, 3, 4, 5];
-        let [] = index_many_mut(&mut v, []);
+        let [] = index_many_mut::<_, usize, 0>(&mut v, []);
         assert_eq!(v, vec![1, 2, 3, 4, 5]);
     }
 
     #[test]
     fn test_ref_empty() {
         let v = vec![1, 2, 3, 4, 5];
-        let [] = index_many(&v, []);
+        let [] = index_many::<_, usize, 0>(&v, []);
         assert_eq!(v, vec![1, 2, 3, 4, 5]);
     }
 

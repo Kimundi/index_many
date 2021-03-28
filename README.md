@@ -4,16 +4,17 @@ Proof of concept functions for (mutably) accessing a slice at multiple positions
 
 This crate implements two APIs:
 
-- "simple": only accepts a sorted array `[usize; N]` of indices.
+- "simple": accepts a sorted array `[usize; N]` of indices.
+- "slice_index": accepts a sorted array `[I; N]` of indices, where `I: SliceIndex<[T]>`.
 - "generic": uses a generic `I: Indices<N>` that allows for more flexibility.
 
 # Example
 
 ```rust
-use index_many::generic::SliceExt;
+use index_many::generic::index_many_mut;
 
 let mut v = vec![1, 2, 3, 4, 5];
-let [a, b, c] = v.index_many_mut([0, 2, 4]);
+let [a, b, c] = index_many_mut(&mut v, [0, 2, 4]);
 *a += 10;
 *b += 100;
 *c += 1000;
