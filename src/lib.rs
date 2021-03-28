@@ -14,11 +14,10 @@ unsafe fn index_many_internal<'a, T, const N: usize>(
     indices: [usize; N],
 ) -> [&'a T; N] {
     let mut arr: MaybeUninit<[&'a T; N]> = MaybeUninit::uninit();
-    let arr_ptr = arr.as_mut_ptr() as *mut &'a T;
+    let arr_ptr = arr.as_mut_ptr();
     for i in 0..N {
-        arr_ptr
-            .add(i)
-            .write(&*slice.get_unchecked(*indices.get_unchecked(i)));
+        let idx = *indices.get_unchecked(i);
+        *(*arr_ptr).get_unchecked_mut(i) = &*slice.get_unchecked(idx);
     }
     arr.assume_init()
 }
@@ -28,11 +27,10 @@ unsafe fn index_many_mut_internal<'a, T, const N: usize>(
     indices: [usize; N],
 ) -> [&'a mut T; N] {
     let mut arr: MaybeUninit<[&'a mut T; N]> = MaybeUninit::uninit();
-    let arr_ptr = arr.as_mut_ptr() as *mut &'a mut T;
+    let arr_ptr = arr.as_mut_ptr();
     for i in 0..N {
-        arr_ptr
-            .add(i)
-            .write(&mut *slice.get_unchecked_mut(*indices.get_unchecked(i)));
+        let idx = *indices.get_unchecked(i);
+        *(*arr_ptr).get_unchecked_mut(i) = &mut *slice.get_unchecked_mut(idx);
     }
     arr.assume_init()
 }
