@@ -2,6 +2,46 @@ use std::ops::Deref;
 
 use super::Indices;
 
+/// This type ensures statically that the indices are sorted and unique.
+///
+/// This ensures only a single comparison is needed to check if the indices
+/// are in bounds of a slice.
+///
+/// # Example codegen
+///
+/// ```rust
+/// use index_many::generic::PresortedIndices;
+/// pub fn example(slice: &mut [usize], indices: PresortedIndices<3>) -> [&mut usize; 3] {
+///     index_many::generic::index_many_mut(slice, indices)
+/// }
+/// ```
+///
+/// ```nasm
+/// example:
+///  sub     rsp, 56
+///  mov     r11, qword, ptr, [r9]
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     rax, qword, ptr, [r9, +, 16]
+///  cmp     rax, r8
+///  jae     .LBB2_1
+///  lea     r8, [rdx, +, 8*r11]
+///  lea     r9, [rdx, +, 8*r10]
+///  lea     rax, [rdx, +, 8*rax]
+///  mov     qword, ptr, [rcx], r8
+///  mov     qword, ptr, [rcx, +, 8], r9
+///  mov     qword, ptr, [rcx, +, 16], rax
+///  mov     rax, rcx
+///  add     rsp, 56
+///  ret
+/// .LBB2_1:
+///  mov     qword, ptr, [rsp, +, 32], r11
+///  mov     qword, ptr, [rsp, +, 40], r10
+///  mov     qword, ptr, [rsp, +, 48], rax
+///  lea     rcx, [rsp, +, 32]
+///  mov     edx, 3
+///  call    index_many::bound_check_failed
+///  ud2
+/// ```
 #[derive(Copy, Clone)]
 pub struct PresortedIndices<const N: usize> {
     indices: [usize; N],

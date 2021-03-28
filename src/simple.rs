@@ -1,3 +1,8 @@
+//! A simple variant of the API, that expects an array of `[usize; N]` indices.
+//!
+//! The array has to be sorted, and each element unique. This ensures that
+//! only `N` comparisons are needed at runtime to verify the indices are in bounds.
+
 #[inline]
 fn check_indices_valid(indices: &[usize], len: usize) -> bool {
     let mut valid = true;

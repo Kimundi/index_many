@@ -1,3 +1,11 @@
+//! A generic variant of the API, that can be indexed by any type implementing `Indices<N>`.
+//!
+//! The `Indices<N>` trait allows for more flexibility in its implementors:
+//!
+//! - `[usize; N]` works like the simple API.
+//! - `PresortedIndices<N>` ensures statically that the indices are sorted.
+//! - `UnsortedIndices<N>` allows any order for the indices.
+
 mod presorted_indices;
 mod sorted_indices;
 mod unsorted_indices;
