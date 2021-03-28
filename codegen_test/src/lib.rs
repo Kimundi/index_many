@@ -15,6 +15,13 @@ pub unsafe fn index_many_mut_hardcoded_unchecked_simple(
     index_many::simple::index_many_mut_unchecked(slice, indices)
 }
 
+pub unsafe fn index_many_mut_hardcoded_option_simple(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Option<[&mut Elem; LEN]> {
+    index_many::simple::get_many_mut(slice, indices)
+}
+
 pub unsafe fn index_many_mut_hardcoded_checked(
     slice: &mut [Elem],
     indices: [usize; LEN],
@@ -27,6 +34,13 @@ pub unsafe fn index_many_mut_hardcoded_unchecked(
     indices: [usize; LEN],
 ) -> [&mut Elem; LEN] {
     index_many::generic::index_many_mut_unchecked(slice, indices)
+}
+
+pub unsafe fn index_many_mut_hardcoded_option(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Option<[&mut Elem; LEN]> {
+    index_many::generic::get_many_mut(slice, indices)
 }
 
 pub fn index_many_mut_hardcoded_presorted(
