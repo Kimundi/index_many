@@ -1,7 +1,7 @@
-//! A simple variant of the API, that expects an array of `[usize; N]` indices.
+//! A variant of the API that also works with ranges.
 //!
-//! The array has to be sorted, and each element unique. This ensures that
-//! only `N` comparisons are needed at runtime to verify the indices are in bounds.
+//! The elements have to be sorted, and not overlap. This ensures that
+//! only `O(N)` comparisons are needed at runtime to verify the indices are in bounds.
 
 mod ranges;
 mod single_usize;
