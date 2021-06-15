@@ -79,10 +79,11 @@ mod tests {
     fn test_mut_normal() {
         let mut v = vec![1, 2, 3, 4, 5];
         let [a, b, c] = index_many_mut(&mut v, [0, 2, 4]);
-        *a += 10;
         *b += 100;
+        *a += 10;
         *c += 1000;
-        assert_eq!(v, vec![11, 2, 103, 4, 1005]);
+        std::mem::swap(a, b);
+        assert_eq!(v, vec![103, 2, 11, 4, 1005]);
     }
 
     #[test]
