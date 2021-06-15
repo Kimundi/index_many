@@ -1,9 +1,8 @@
 #![feature(array_windows)]
 #![feature(slice_ptr_get)]
 #![feature(is_sorted)]
-#![feature(external_doc)]
 #![feature(unchecked_math)]
-#![doc(include = "../README.md")]
+#![doc = include_str!("../README.md")]
 
 use std::{array::IntoIter, mem::MaybeUninit, slice::SliceIndex};
 
