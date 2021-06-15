@@ -5,6 +5,7 @@ Proof of concept functions for (mutably) accessing a slice at multiple positions
 This crate implements two APIs:
 
 - "simple": accepts a sorted array `[usize; N]` of indices.
+- "simple_result": accepts a sorted array `[usize; N]` of indices, but with an `Result` based API.
 - "slice_index": accepts a sorted array `[I; N]` of indices, where `I: SliceIndex<[T]>`.
 - "generic": uses a generic `I: Indices<N>` that allows for more flexibility.
 
