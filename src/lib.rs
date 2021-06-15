@@ -9,6 +9,7 @@ use std::{array::IntoIter, mem::MaybeUninit, slice::SliceIndex};
 pub mod generic;
 pub mod simple;
 pub mod slice_index;
+pub mod with_result;
 
 unsafe fn get_many_internal<'a, T, I: SliceIndex<[T]>, const N: usize>(
     slice: *const [T],
