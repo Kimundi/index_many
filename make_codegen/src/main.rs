@@ -27,7 +27,10 @@ fn run(s: &str) -> String {
 }
 
 fn main() {
-    let p = Path::new("./codegen_test");
+    let p = Path::new("./.codegen");
+    if !p.exists() {
+        std::fs::create_dir(p).unwrap();
+    }
     for p in std::fs::read_dir(p).unwrap() {
         let p = p.unwrap().path();
         if p.extension() == Some("asm".as_ref()) {
