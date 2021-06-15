@@ -8,6 +8,7 @@ fn run(s: &str) -> String {
         .args(&args[1..])
         .stderr(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
+        .current_dir("./codegen_test")
         .spawn()
         .unwrap()
         .wait_with_output()
@@ -17,7 +18,7 @@ fn run(s: &str) -> String {
         Ok(_) => String::from_utf8(out.stdout).unwrap(),
         Err(e) => {
             eprintln!("Error[{}] with `{}`", e.code().unwrap_or(0), s);
-            //eprintln!("{}", String::from_utf8(out.stderr).unwrap());
+            // eprintln!("{}", String::from_utf8(out.stderr).unwrap());
             String::new()
         }
     };
@@ -47,6 +48,8 @@ fn main() {
         )
         .unwrap();
     }
+
+    let _ = codegen_test::option_generic;
 
     println!();
     println!("DONE");

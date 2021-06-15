@@ -152,6 +152,4 @@ generate! {
     ) -> [&mut Elem; LEN] {
         index_many::simple_result::get_many_mut(slice, indices).unwrap()
     }
-
-
 }
