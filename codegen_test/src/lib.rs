@@ -34,7 +34,7 @@ generate! {
         index_many::simple::index_many_mut_unchecked(slice, indices)
     }
 
-    0: fn option_simple(slice: &mut [Elem], indices: [usize; LEN]) -> Option<[&mut Elem; LEN]> {
+    1: fn option_simple(slice: &mut [Elem], indices: [usize; LEN]) -> Option<[&mut Elem; LEN]> {
         index_many::simple::get_many_mut(slice, indices)
     }
 
@@ -50,7 +50,7 @@ generate! {
         index_many::generic::index_many_mut_unchecked(slice, indices)
     }
 
-    0: fn option(slice: &mut [Elem], indices: [usize; LEN]) -> Option<[&mut Elem; LEN]> {
+    1: fn option(slice: &mut [Elem], indices: [usize; LEN]) -> Option<[&mut Elem; LEN]> {
         index_many::generic::get_many_mut(slice, indices)
     }
 
@@ -58,21 +58,21 @@ generate! {
         index_many::generic::get_many_mut(slice, indices).unwrap()
     }
 
-    0: fn result(
+    1: fn result(
         slice: &mut [Elem],
         indices: [usize; LEN],
     ) -> Result<[&mut Elem; LEN], GetManyError<LEN>> {
         index_many::simple_result::get_many_mut(slice, indices)
     }
 
-    0: fn result_kind(
+    1: fn result_kind(
         slice: &mut [Elem],
         indices: [usize; LEN],
     ) -> Result<[&mut Elem; LEN], GetManyErrorKind> {
         index_many::simple_result::get_many_mut(slice, indices).map_err(|e| e.kind())
     }
 
-    0: fn result_option(slice: &mut [Elem], indices: [usize; LEN]) -> Option<[&mut Elem; LEN]> {
+    1: fn result_option(slice: &mut [Elem], indices: [usize; LEN]) -> Option<[&mut Elem; LEN]> {
         index_many::simple_result::get_many_mut(slice, indices).ok()
     }
 

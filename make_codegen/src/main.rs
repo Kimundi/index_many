@@ -12,11 +12,19 @@ fn main() {
     for &(i, name) in codegen_test::FUNCTIONS {
         writeln!(
             s,
-            r"cargo asm codegen_test::{1}() --no-color > {0}_{1}.asm",
+            r"cargo asm codegen_test::{1} --no-color > {0}_{1}.asm",
             i, name
         )
         .unwrap();
     }
 
     std::fs::write("./get_asm.bat", s).unwrap();
+    std::process::Command::new("./get_asm.bat")
+        .spawn()
+        .unwrap()
+        .wait()
+        .unwrap();
+
+    println!();
+    println!("DONE");
 }
