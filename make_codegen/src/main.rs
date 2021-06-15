@@ -18,5 +18,5 @@ fn main() {
         .unwrap();
     }
 
-    std::fs::write("./get_asm_2.bat", s).unwrap();
+    std::fs::write("./get_asm.bat", s).unwrap();
 }
