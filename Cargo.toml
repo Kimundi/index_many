@@ -16,4 +16,4 @@ keywords = ["slice", "array", "index"]
 [dependencies]
 
 [workspace]
-members = ["codegen_test"]
+members = ["codegen_test", "make_codegen"]
