@@ -22,7 +22,7 @@ fn run(s: &str) -> String {
         }
     };
 
-    let p = ret.find("_ZN12codegen_test13").unwrap_or(ret.len());
+    let p = ret.find("_ZN12codegen_test").unwrap_or(ret.len());
     ret[..p].to_owned()
 }
 
