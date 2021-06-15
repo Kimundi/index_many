@@ -1,5 +1,7 @@
 use std::ops::Range;
 
+use index_many::simple_result::{GetManyError, GetManyErrorKind};
+
 pub type Elem = usize;
 pub const LEN: usize = 3;
 
@@ -15,6 +17,10 @@ pub unsafe fn option_simple(slice: &mut [Elem], indices: [usize; LEN]) -> Option
     index_many::simple::get_many_mut(slice, indices)
 }
 
+pub unsafe fn option_simple_unwrap(slice: &mut [Elem], indices: [usize; LEN]) -> [&mut Elem; LEN] {
+    index_many::simple::get_many_mut(slice, indices).unwrap()
+}
+
 pub unsafe fn checked(slice: &mut [Elem], indices: [usize; LEN]) -> [&mut Elem; LEN] {
     index_many::generic::index_many_mut(slice, indices)
 }
@@ -27,14 +33,40 @@ pub unsafe fn option(slice: &mut [Elem], indices: [usize; LEN]) -> Option<[&mut 
     index_many::generic::get_many_mut(slice, indices)
 }
 
-pub fn presorted(
+pub unsafe fn option_unwrap(slice: &mut [Elem], indices: [usize; LEN]) -> [&mut Elem; LEN] {
+    index_many::generic::get_many_mut(slice, indices).unwrap()
+}
+
+pub unsafe fn result(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Result<[&mut Elem; LEN], GetManyError<LEN>> {
+    index_many::simple_result::get_many_mut(slice, indices)
+}
+
+pub unsafe fn result_kind(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Result<[&mut Elem; LEN], GetManyErrorKind> {
+    index_many::simple_result::get_many_mut(slice, indices).map_err(|e| e.kind())
+}
+
+pub unsafe fn result_option(slice: &mut [Elem], indices: [usize; LEN]) -> Option<[&mut Elem; LEN]> {
+    index_many::simple_result::get_many_mut(slice, indices).ok()
+}
+
+pub unsafe fn result_unwrap(slice: &mut [Elem], indices: [usize; LEN]) -> [&mut Elem; LEN] {
+    index_many::simple_result::get_many_mut(slice, indices).unwrap()
+}
+
+pub unsafe fn presorted(
     slice: &mut [Elem],
     indices: index_many::generic::PresortedIndices<LEN>,
 ) -> [&mut Elem; LEN] {
     index_many::generic::index_many_mut(slice, indices)
 }
 
-pub fn unsorted(
+pub unsafe fn unsorted(
     slice: &mut [Elem],
     indices: index_many::generic::UnsortedIndices<LEN>,
 ) -> [&mut Elem; LEN] {

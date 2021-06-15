@@ -29,6 +29,7 @@ pub unsafe fn index_many_mut_unchecked<'a, T, const N: usize>(
     crate::get_many_internal_mut(slice, indices)
 }
 
+#[derive(Debug)]
 pub struct GetManyError<const N: usize> {
     indices: [usize; N],
     len: usize,
