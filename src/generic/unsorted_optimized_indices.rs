@@ -5,7 +5,8 @@ use super::Indices;
 /// This requires `O(N^2)` comparisons to check if the indices are unique and
 /// in bounds of a slice.
 ///
-/// This variant includes manual optimizations for N <= 2.
+/// This variant includes manual optimizations for N <= 3, though they don't seem
+/// to improve the codegen.
 ///
 /// # Example codegen
 ///
@@ -17,6 +18,40 @@ use super::Indices;
 /// ```
 ///
 /// ```nasm
+/// example:
+///  sub     rsp, 56
+///  mov     rax, qword, ptr, [r9]
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     r9, qword, ptr, [r9, +, 16]
+///  cmp     r9, r8
+///  jae     .LBB0_6
+///  cmp     r10, r9
+///  je      .LBB0_6
+///  cmp     r10, r8
+///  jae     .LBB0_6
+///  cmp     rax, r9
+///  je      .LBB0_6
+///  cmp     rax, r8
+///  jae     .LBB0_6
+///  cmp     rax, r10
+///  je      .LBB0_6
+///  lea     rax, [rdx, +, 8*rax]
+///  lea     r8, [rdx, +, 8*r10]
+///  lea     rdx, [rdx, +, 8*r9]
+///  mov     qword, ptr, [rcx], rax
+///  mov     qword, ptr, [rcx, +, 8], r8
+///  mov     qword, ptr, [rcx, +, 16], rdx
+///  mov     rax, rcx
+///  add     rsp, 56
+///  ret
+/// .LBB0_6:
+///  mov     qword, ptr, [rsp, +, 32], rax
+///  mov     qword, ptr, [rsp, +, 40], r10
+///  mov     qword, ptr, [rsp, +, 48], r9
+///  lea     rcx, [rsp, +, 32]
+///  mov     edx, 3
+///  call    index_many::bound_check_failed
+///  ud2
 /// ```
 #[derive(Copy, Clone)]
 pub struct UnsortedOptimizedIndices<const N: usize>(pub [usize; N]);
@@ -43,6 +78,20 @@ unsafe impl<const N: usize> Indices<N> for UnsortedOptimizedIndices<N> {
                 valid &= a != b;
                 valid &= a < len;
                 valid &= b < len;
+            }
+            3 => {
+                let a = self.0[0];
+                let b = self.0[1];
+                let c = self.0[2];
+
+                valid &= a < len;
+                valid &= a != b;
+                valid &= a != c;
+
+                valid &= b < len;
+                valid &= b != c;
+
+                valid &= c < len;
             }
             _ => {
                 for (i, &idx) in self.0.iter().enumerate() {
