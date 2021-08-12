@@ -23,18 +23,18 @@ use super::Indices;
 ///  mov     rax, qword, ptr, [r9]
 ///  mov     r10, qword, ptr, [r9, +, 8]
 ///  mov     r9, qword, ptr, [r9, +, 16]
+///  cmp     r9, r10
+///  je      .LBB3_6
+///  cmp     r9, rax
+///  je      .LBB3_6
 ///  cmp     r9, r8
-///  jae     .LBB0_6
-///  cmp     r10, r9
-///  je      .LBB0_6
-///  cmp     r10, r8
-///  jae     .LBB0_6
-///  cmp     rax, r9
-///  je      .LBB0_6
+///  jae     .LBB3_6
+///  cmp     r10, rax
+///  je      .LBB3_6
 ///  cmp     rax, r8
-///  jae     .LBB0_6
-///  cmp     rax, r10
-///  je      .LBB0_6
+///  jae     .LBB3_6
+///  cmp     r10, r8
+///  jae     .LBB3_6
 ///  lea     rax, [rdx, +, 8*rax]
 ///  lea     r8, [rdx, +, 8*r10]
 ///  lea     rdx, [rdx, +, 8*r9]
@@ -44,7 +44,7 @@ use super::Indices;
 ///  mov     rax, rcx
 ///  add     rsp, 56
 ///  ret
-/// .LBB0_6:
+/// .LBB3_6:
 ///  mov     qword, ptr, [rsp, +, 32], rax
 ///  mov     qword, ptr, [rsp, +, 40], r10
 ///  mov     qword, ptr, [rsp, +, 48], r9
@@ -85,13 +85,13 @@ unsafe impl<const N: usize> Indices<N> for UnsortedOptimizedIndices<N> {
                 let c = self.0[2];
 
                 valid &= a < len;
-                valid &= a != b;
-                valid &= a != c;
 
                 valid &= b < len;
-                valid &= b != c;
+                valid &= b != a;
 
                 valid &= c < len;
+                valid &= c != a;
+                valid &= c != b;
             }
             _ => {
                 for (i, &idx) in self.0.iter().enumerate() {
