@@ -69,7 +69,7 @@ fn main() {
     let mut duplicates = HashMap::new();
 
     let header = codegen_test::HEADER;
-    for &(i, name, source) in codegen_test::FUNCTIONS {
+    for (gi, &(i, name, source)) in codegen_test::FUNCTIONS.iter().enumerate() {
         println!("Check {}...", name);
         let code = format!("{}\n{}", header, source);
         std::fs::write(tempdir.join("src").join("lib.rs"), code).unwrap();
@@ -83,7 +83,7 @@ fn main() {
                 let ret = String::from_utf8(out.stdout).unwrap();
 
                 let v: &mut Vec<_> = duplicates.entry(ret.replace(name, "<name>")).or_default();
-                v.push((i, name));
+                v.push((gi, i, name));
 
                 ret
             }
@@ -103,12 +103,12 @@ fn main() {
             duplicates_vec.push(v);
         }
     }
-    duplicates_vec.sort_by_key(|v| v[0].1.to_owned());
+    duplicates_vec.sort_by_key(|v| v[0].0);
 
     println!();
     println!("Duplicates:");
     for v in duplicates_vec {
-        for (i, e) in v {
+        for (_gi, i, e) in v {
             println!("  {} {}", i, e);
         }
         println!();
