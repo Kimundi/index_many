@@ -1,31 +1,55 @@
-use std::ops::Range;
-
-use index_many::simple_result::{GetManyError, GetManyErrorKind};
-
-pub type Elem = usize;
-pub const LEN: usize = 3;
-
 macro_rules! generate {
-    ($(
-        $id:literal: fn $name:ident($(
-            $arg:ident: $argty:ty
-        ),* $(,)?) -> $ret:ty $blk:block
-    )*) => {
+    (
+        header {
+            $(
+                $item:item
+            )*
+        }
+        $(
+            $id:literal: fn $name:ident($(
+                $arg:ident: $argty:ty
+            ),* $(,)?) -> $ret:ty $blk:block
+        )*
+    ) => {
+        $(
+            $item
+        )*
+
         $(
             pub unsafe fn $name($(
                 $arg: $argty
             ),*) -> $ret $blk
         )*
 
-        pub const FUNCTIONS: &[(i32, &'static str)] = &[
+        pub const HEADER: &str = stringify!(
             $(
-                ($id, stringify!($name)),
+                $item
+            )*
+        );
+        pub const FUNCTIONS: &[(i32, &'static str, &'static str)] = &[
+            $(
+                ($id, stringify!($name), stringify!(
+                    pub unsafe fn $name($(
+                        $arg: $argty
+                    ),*) -> $ret $blk
+                )),
             )*
         ];
     }
 }
 
 generate! {
+    header {
+        #[allow(unused_imports)]
+        use std::ops::Range;
+
+        #[allow(unused_imports)]
+        use index_many::simple_result::{GetManyError, GetManyErrorKind};
+
+        pub type Elem = usize;
+        pub const LEN: usize = 3;
+    }
+
     1: fn option_simple(
         slice: &mut [Elem],
         indices: [usize; LEN]

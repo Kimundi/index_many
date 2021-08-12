@@ -7,3 +7,4 @@ edition = "2018"
 
 [dependencies]
 codegen_test = { path = "../codegen_test" }
+tempfile = "3"
