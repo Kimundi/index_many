@@ -97,19 +97,23 @@ fn main() {
         std::fs::write(output_dir.join(format!("{}_{}.asm", i, name)), ret).unwrap();
     }
 
-    println!();
-
-    println!("Duplicates:");
+    let mut duplicates_vec = Vec::new();
     for v in duplicates.values() {
         if v.len() > 1 {
-            for (i, e) in v {
-                println!("  {} {}", i, e);
-            }
-            println!();
+            duplicates_vec.push(v);
         }
+    }
+    duplicates_vec.sort_by_key(|v| v[0].1.to_owned());
+
+    println!();
+    println!("Duplicates:");
+    for v in duplicates_vec {
+        for (i, e) in v {
+            println!("  {} {}", i, e);
+        }
+        println!();
     }
 
     println!();
-
     println!("DONE");
 }
