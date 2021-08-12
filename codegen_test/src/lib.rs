@@ -76,6 +76,12 @@ generate! {
     ) -> Option<[&mut [Elem]; LEN]> {
         slice_index::get_many_mut(slice, indices)
     }
+    1: fn option_unsorted(
+        slice: &mut [Elem],
+        indices: generic::UnsortedIndices<LEN>,
+    ) -> Option<[&mut Elem; LEN]> {
+        generic::get_many_mut(slice, indices)
+    }
     1: fn result_simple(
         slice: &mut [Elem],
         indices: [usize; LEN],

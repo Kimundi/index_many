@@ -157,6 +157,44 @@ pub unsafe fn option_range_trait(
     slice_index::get_many_mut(slice, indices)
 }
 
+/// Body: `{ generic::get_many_mut(slice, indices) }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::option_unsorted:
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     rcx, qword, ptr, [r9, +, 16]
+///  cmp     rcx, r10
+///  je      .LBB0_7
+///  mov     r9, qword, ptr, [r9]
+///  cmp     rcx, r9
+///  je      .LBB0_7
+///  cmp     rcx, r8
+///  jae     .LBB0_7
+///  cmp     r10, r9
+///  je      .LBB0_7
+///  cmp     r9, r8
+///  jae     .LBB0_7
+///  cmp     r10, r8
+///  jae     .LBB0_7
+///  lea     r8, [rdx, +, 8*r9]
+///  lea     r9, [rdx, +, 8*r10]
+///  lea     rcx, [rdx, +, 8*rcx]
+///  mov     qword, ptr, [rax], r8
+///  mov     qword, ptr, [rax, +, 8], r9
+///  mov     qword, ptr, [rax, +, 16], rcx
+///  ret
+/// .LBB0_7:
+///  mov     qword, ptr, [rax], 0
+///  ret
+/// ```
+pub unsafe fn option_unsorted(
+    slice: &mut [Elem],
+    indices: generic::UnsortedIndices<LEN>,
+) -> Option<[&mut Elem; LEN]> {
+    generic::get_many_mut(slice, indices)
+}
+
 /// Body: `{ simple_result::get_many_mut(slice, indices) }`
 ///
 /// # Assembly (x86_64)
