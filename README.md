@@ -2,7 +2,7 @@ Proof of concept functions for (mutably) accessing a slice at multiple positions
 
 # Provided APIs
 
-This crate implements two APIs:
+This crate implements multiple APIs:
 
 - "simple": accepts a sorted array `[usize; N]` of indices.
 - "simple_result": accepts a sorted array `[usize; N]` of indices, but with an `Result` based API.
@@ -22,41 +22,6 @@ let [a, b, c] = index_many_mut(&mut v, [0, 2, 4]);
 assert_eq!(v, vec![11, 2, 103, 4, 1005]);
 ```
 
-# Example codegen
+# Generated Assembly
 
-```rust
-pub fn example(slice: &mut [usize], indices: [usize; 3]) -> [&mut usize; 3] {
-    index_many::generic::index_many_mut(slice, indices)
-}
-```
-
-```nasm
-example:
- sub     rsp, 56
- mov     r10, qword, ptr, [r9]
- mov     rax, qword, ptr, [r9, +, 8]
- mov     r9, qword, ptr, [r9, +, 16]
- cmp     r9, r8
- jae     .LBB0_3
- cmp     r10, rax
- jae     .LBB0_3
- cmp     rax, r9
- jae     .LBB0_3
- lea     r8, [rdx, +, 8*r10]
- lea     rax, [rdx, +, 8*rax]
- lea     rdx, [rdx, +, 8*r9]
- mov     qword, ptr, [rcx], r8
- mov     qword, ptr, [rcx, +, 8], rax
- mov     qword, ptr, [rcx, +, 16], rdx
- mov     rax, rcx
- add     rsp, 56
- ret
-.LBB0_3:
- mov     qword, ptr, [rsp, +, 32], r10
- mov     qword, ptr, [rsp, +, 40], rax
- mov     qword, ptr, [rsp, +, 48], r9
- lea     rcx, [rsp, +, 32]
- mov     edx, 3
- call    index_many::sorted_bound_check_failed
- ud2
-```
+The docs contain example functions with their x86_64 assembly codegen. See the [`crate::_doc_assembly`] module.

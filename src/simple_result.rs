@@ -1,4 +1,8 @@
 //! A variant of the simple API that returns a `Result` instead.
+//!
+//! # Example codegen
+//! See [`crate::_doc_assembly::result_simple()`]
+//!
 
 #[inline]
 fn check_indices_valid(indices: &[usize], len: usize) -> bool {

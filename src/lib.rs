@@ -6,6 +6,7 @@
 
 use std::{array::IntoIter, mem::MaybeUninit, slice::SliceIndex};
 
+pub mod _doc_assembly;
 pub mod generic;
 pub mod simple;
 pub mod simple_result;

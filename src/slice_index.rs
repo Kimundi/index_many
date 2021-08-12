@@ -2,6 +2,8 @@
 //!
 //! The elements have to be sorted, and not overlap. This ensures that
 //! only `O(N)` comparisons are needed at runtime to verify the indices are in bounds.
+//! # Example codegen
+//! See [`crate::_doc_assembly::checked_usize_trait()`]
 
 mod ranges;
 mod single_usize;

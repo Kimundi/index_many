@@ -2,6 +2,10 @@
 //!
 //! The array has to be sorted, and each element unique. This ensures that
 //! only `N` comparisons are needed at runtime to verify the indices are in bounds.
+//!
+//! # Example codegen
+//! See [`crate::_doc_assembly::checked_simple()`]
+//!
 
 #[inline]
 fn check_indices_valid(indices: &[usize], len: usize) -> bool {

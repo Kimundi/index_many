@@ -6,50 +6,7 @@ use super::Indices;
 /// in bounds of a slice.
 ///
 /// # Example codegen
-///
-/// ```rust
-/// use index_many::generic::UnsortedIndices;
-/// pub fn example(slice: &mut [usize], indices: UnsortedIndices<3>) -> [&mut usize; 3] {
-///     index_many::generic::index_many_mut(slice, indices)
-/// }
-/// ```
-///
-/// ```nasm
-/// example:
-///  sub     rsp, 56
-///  mov     rax, qword, ptr, [r9]
-///  mov     r10, qword, ptr, [r9, +, 8]
-///  mov     r9, qword, ptr, [r9, +, 16]
-///  cmp     r9, r10
-///  je      .LBB3_6
-///  cmp     r9, rax
-///  je      .LBB3_6
-///  cmp     r9, r8
-///  jae     .LBB3_6
-///  cmp     r10, rax
-///  je      .LBB3_6
-///  cmp     rax, r8
-///  jae     .LBB3_6
-///  cmp     r10, r8
-///  jae     .LBB3_6
-///  lea     rax, [rdx, +, 8*rax]
-///  lea     r8, [rdx, +, 8*r10]
-///  lea     rdx, [rdx, +, 8*r9]
-///  mov     qword, ptr, [rcx], rax
-///  mov     qword, ptr, [rcx, +, 8], r8
-///  mov     qword, ptr, [rcx, +, 16], rdx
-///  mov     rax, rcx
-///  add     rsp, 56
-///  ret
-/// .LBB3_6:
-///  mov     qword, ptr, [rsp, +, 32], rax
-///  mov     qword, ptr, [rsp, +, 40], r10
-///  mov     qword, ptr, [rsp, +, 48], r9
-///  lea     rcx, [rsp, +, 32]
-///  mov     edx, 3
-///  call    index_many::bound_check_failed
-///  ud2
-/// ```
+/// See [`crate::_doc_assembly::checked_unsorted()`]
 #[derive(Copy, Clone)]
 pub struct UnsortedIndices<const N: usize>(pub [usize; N]);
 

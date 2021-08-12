@@ -5,6 +5,8 @@
 //! - `[usize; N]` works like the simple API.
 //! - `PresortedIndices<N>` ensures statically that the indices are sorted.
 //! - `UnsortedIndices<N>` allows any order for the indices.
+//! - `UnsortedOptimizedIndices<N>` allows any order for the indices,
+//!    but tries to specialize for `N <= 3`.
 
 mod presorted_indices;
 mod sorted_indices;
