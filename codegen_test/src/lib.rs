@@ -107,7 +107,36 @@ generate! {
     ) -> [&mut Elem; LEN] {
         index_many::generic::index_many_mut(slice, indices)
     }
-
+    2: fn checked_optimized_0(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedIndices<0>,
+    ) -> [&mut Elem; 0] {
+        index_many::generic::index_many_mut(slice, indices)
+    }
+    2: fn checked_optimized_1(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedIndices<1>,
+    ) -> [&mut Elem; 1] {
+        index_many::generic::index_many_mut(slice, indices)
+    }
+    2: fn checked_optimized_2(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedIndices<2>,
+    ) -> [&mut Elem; 2] {
+        index_many::generic::index_many_mut(slice, indices)
+    }
+    2: fn checked_optimized_3(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedIndices<3>,
+    ) -> [&mut Elem; 3] {
+        index_many::generic::index_many_mut(slice, indices)
+    }
+    2: fn checked_optimized_4(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedIndices<4>,
+    ) -> [&mut Elem; 4] {
+        index_many::generic::index_many_mut(slice, indices)
+    }
 
     3: fn unchecked_simple(
         slice: &mut [Elem],
@@ -151,5 +180,37 @@ generate! {
         indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
         index_many::simple_result::get_many_mut(slice, indices).unwrap()
+    }
+
+
+    5: fn checked_unsorted_optimized_0(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedOptimizedIndices<0>,
+    ) -> [&mut Elem; 0] {
+        index_many::generic::index_many_mut(slice, indices)
+    }
+    5: fn checked_unsorted_optimized_1(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedOptimizedIndices<1>,
+    ) -> [&mut Elem; 1] {
+        index_many::generic::index_many_mut(slice, indices)
+    }
+    5: fn checked_unsorted_optimized_2(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedOptimizedIndices<2>,
+    ) -> [&mut Elem; 2] {
+        index_many::generic::index_many_mut(slice, indices)
+    }
+    5: fn checked_unsorted_optimized_3(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedOptimizedIndices<3>,
+    ) -> [&mut Elem; 3] {
+        index_many::generic::index_many_mut(slice, indices)
+    }
+    5: fn checked_unsorted_optimized_4(
+        slice: &mut [Elem],
+        indices: index_many::generic::UnsortedOptimizedIndices<4>,
+    ) -> [&mut Elem; 4] {
+        index_many::generic::index_many_mut(slice, indices)
     }
 }

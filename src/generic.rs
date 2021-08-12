@@ -9,10 +9,12 @@
 mod presorted_indices;
 mod sorted_indices;
 mod unsorted_indices;
+mod unsorted_optimized_indices;
 
 pub use presorted_indices::PresortedIndices;
 pub use presorted_indices::PresortedIndicesError;
 pub use unsorted_indices::UnsortedIndices;
+pub use unsorted_optimized_indices::UnsortedOptimizedIndices;
 
 pub unsafe trait Indices<const N: usize>: Copy {
     fn to_raw_indices(&self) -> [usize; N];
