@@ -26,13 +26,13 @@ macro_rules! generate {
                 $item
             )*
         );
-        pub const FUNCTIONS: &[(i32, &'static str, &'static str)] = &[
+        pub const FUNCTIONS: &[(i32, &'static str, &'static str, &'static str)] = &[
             $(
                 ($id, stringify!($name), stringify!(
                     pub unsafe fn $name($(
                         $arg: $argty
                     ),*) -> $ret $blk
-                )),
+                ), stringify!($blk)),
             )*
         ];
     }
