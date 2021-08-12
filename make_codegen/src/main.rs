@@ -74,19 +74,19 @@ fn main() {
     //! This module contains example functions with the generated assembly in
     //! their docs.
 
-    use crate as {};
+    use crate::*;
 
     {}
 
     "##,
-        crate_name, header
+        header
     );
 
     let mut duplicates = HashMap::new();
 
     for (gi, &(i, name, source, body)) in codegen_test::FUNCTIONS.iter().enumerate() {
         println!("Check {}...", name);
-        let code = format!("{}\n{}", header, source);
+        let code = format!("use {}::*;\n{}\n{}", crate_name, header, source);
         std::fs::write(tempdir.join("src").join("lib.rs"), code).unwrap();
         run_raw("cargo fmt", &tempdir, false);
 
@@ -105,7 +105,7 @@ fn main() {
                     /// Body: `{}`
                     ///
                     /// # Assembly (x86_64)
-                    /// ```nasm
+                    /// ```x86asm
                     {}
                     /// ```
                     {}

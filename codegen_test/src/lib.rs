@@ -11,6 +11,8 @@ macro_rules! generate {
             ),* $(,)?) -> $ret:ty $blk:block
         )*
     ) => {
+        use index_many::*;
+
         $(
             $item
         )*
@@ -44,7 +46,7 @@ generate! {
         use std::ops::Range;
 
         #[allow(unused_imports)]
-        use index_many::simple_result::{GetManyError, GetManyErrorKind};
+        use simple_result::{GetManyError, GetManyErrorKind};
 
         pub type Elem = usize;
         pub const LEN: usize = 3;
@@ -54,43 +56,43 @@ generate! {
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> Option<[&mut Elem; LEN]> {
-        index_many::simple::get_many_mut(slice, indices)
+        simple::get_many_mut(slice, indices)
     }
     1: fn option_generic(
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> Option<[&mut Elem; LEN]> {
-        index_many::generic::get_many_mut(slice, indices)
+        generic::get_many_mut(slice, indices)
     }
     1: fn option_usize_trait(
         slice: &mut [Elem],
         indices: [usize; LEN],
     ) -> Option<[&mut Elem; LEN]> {
-        index_many::slice_index::get_many_mut(slice, indices)
+        slice_index::get_many_mut(slice, indices)
     }
     1: fn option_range_trait(
         slice: &mut [Elem],
         indices: [Range<usize>; LEN],
     ) -> Option<[&mut [Elem]; LEN]> {
-        index_many::slice_index::get_many_mut(slice, indices)
+        slice_index::get_many_mut(slice, indices)
     }
     1: fn result_simple(
         slice: &mut [Elem],
         indices: [usize; LEN],
     ) -> Result<[&mut Elem; LEN], GetManyError<LEN>> {
-        index_many::simple_result::get_many_mut(slice, indices)
+        simple_result::get_many_mut(slice, indices)
     }
     1: fn result_kind(
         slice: &mut [Elem],
         indices: [usize; LEN],
     ) -> Result<[&mut Elem; LEN], GetManyErrorKind> {
-        index_many::simple_result::get_many_mut(slice, indices).map_err(|e| e.kind())
+        simple_result::get_many_mut(slice, indices).map_err(|e| e.kind())
     }
     1: fn result_option(
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> Option<[&mut Elem; LEN]> {
-        index_many::simple_result::get_many_mut(slice, indices).ok()
+        simple_result::get_many_mut(slice, indices).ok()
     }
 
 
@@ -98,92 +100,92 @@ generate! {
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
-        index_many::simple::index_many_mut(slice, indices)
+        simple::index_many_mut(slice, indices)
     }
     2: fn checked_generic(
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     2: fn checked_usize_trait(
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
-        index_many::slice_index::index_many_mut(slice, indices)
+        slice_index::index_many_mut(slice, indices)
     }
     2: fn checked_range_trait(
         slice: &mut [Elem],
         indices: [Range<usize>; LEN],
     ) -> [&mut [Elem]; LEN] {
-        index_many::slice_index::index_many_mut(slice, indices)
+        slice_index::index_many_mut(slice, indices)
     }
     2: fn checked_presorted(
         slice: &mut [Elem],
-        indices: index_many::generic::PresortedIndices<LEN>,
+        indices: generic::PresortedIndices<LEN>,
     ) -> [&mut Elem; LEN] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
 
     2: fn checked_unsorted(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedIndices<LEN>,
+        indices: generic::UnsortedIndices<LEN>,
     ) -> [&mut Elem; LEN] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     2: fn checked_unsorted_0(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedIndices<0>,
+        indices: generic::UnsortedIndices<0>,
     ) -> [&mut Elem; 0] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     2: fn checked_unsorted_1(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedIndices<1>,
+        indices: generic::UnsortedIndices<1>,
     ) -> [&mut Elem; 1] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     2: fn checked_unsorted_2(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedIndices<2>,
+        indices: generic::UnsortedIndices<2>,
     ) -> [&mut Elem; 2] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     2: fn checked_unsorted_3(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedIndices<3>,
+        indices: generic::UnsortedIndices<3>,
     ) -> [&mut Elem; 3] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     2: fn checked_unsorted_4(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedIndices<4>,
+        indices: generic::UnsortedIndices<4>,
     ) -> [&mut Elem; 4] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
 
     3: fn unchecked_simple(
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
-        index_many::simple::index_many_mut_unchecked(slice, indices)
+        simple::index_many_mut_unchecked(slice, indices)
     }
     3: fn unchecked_generic(
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
-        index_many::generic::index_many_mut_unchecked(slice, indices)
+        generic::index_many_mut_unchecked(slice, indices)
     }
     3: fn unchecked_usize_trait(
         slice: &mut [Elem], indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
-        index_many::slice_index::get_many_unchecked_mut(slice, indices)
+        slice_index::get_many_unchecked_mut(slice, indices)
     }
     3: fn unchecked_range_trait(
         slice: &mut [Elem],
         indices: [Range<usize>; LEN],
     ) -> [&mut [Elem]; LEN] {
-        index_many::slice_index::get_many_unchecked_mut(slice, indices)
+        slice_index::get_many_unchecked_mut(slice, indices)
     }
 
 
@@ -191,50 +193,50 @@ generate! {
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
-        index_many::simple::get_many_mut(slice, indices).unwrap()
+        simple::get_many_mut(slice, indices).unwrap()
     }
     4: fn unwrap_option_generic(
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
-        index_many::generic::get_many_mut(slice, indices).unwrap()
+        generic::get_many_mut(slice, indices).unwrap()
     }
     4: fn unwrap_result(
         slice: &mut [Elem],
         indices: [usize; LEN]
     ) -> [&mut Elem; LEN] {
-        index_many::simple_result::get_many_mut(slice, indices).unwrap()
+        simple_result::get_many_mut(slice, indices).unwrap()
     }
 
 
     5: fn checked_unsorted_specialized_0(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedSpecializedIndices<0>,
+        indices: generic::UnsortedSpecializedIndices<0>,
     ) -> [&mut Elem; 0] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     5: fn checked_unsorted_specialized_1(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedSpecializedIndices<1>,
+        indices: generic::UnsortedSpecializedIndices<1>,
     ) -> [&mut Elem; 1] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     5: fn checked_unsorted_specialized_2(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedSpecializedIndices<2>,
+        indices: generic::UnsortedSpecializedIndices<2>,
     ) -> [&mut Elem; 2] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     5: fn checked_unsorted_specialized_3(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedSpecializedIndices<3>,
+        indices: generic::UnsortedSpecializedIndices<3>,
     ) -> [&mut Elem; 3] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
     5: fn checked_unsorted_specialized_4(
         slice: &mut [Elem],
-        indices: index_many::generic::UnsortedSpecializedIndices<4>,
+        indices: generic::UnsortedSpecializedIndices<4>,
     ) -> [&mut Elem; 4] {
-        index_many::generic::index_many_mut(slice, indices)
+        generic::index_many_mut(slice, indices)
     }
 }
