@@ -9,11 +9,11 @@ use super::Indices;
 /// to improve the codegen.
 ///
 /// # Example codegen
-/// See [`crate::_doc_assembly::checked_unsorted_optimized_3()`]
+/// See [`crate::_doc_assembly::checked_unsorted_specialized_3()`]
 #[derive(Copy, Clone)]
-pub struct UnsortedOptimizedIndices<const N: usize>(pub [usize; N]);
+pub struct UnsortedSpecializedIndices<const N: usize>(pub [usize; N]);
 
-unsafe impl<const N: usize> Indices<N> for UnsortedOptimizedIndices<N> {
+unsafe impl<const N: usize> Indices<N> for UnsortedSpecializedIndices<N> {
     #[inline]
     fn to_raw_indices(&self) -> [usize; N] {
         self.0
@@ -71,15 +71,15 @@ unsafe impl<const N: usize> Indices<N> for UnsortedOptimizedIndices<N> {
 
 #[cfg(test)]
 mod tests {
-    use super::UnsortedOptimizedIndices;
+    use super::UnsortedSpecializedIndices;
 
     fn index_many<'a, T, const N: usize>(slice: &[T], indices: [usize; N]) -> [&T; N] {
-        let indices = UnsortedOptimizedIndices(indices);
+        let indices = UnsortedSpecializedIndices(indices);
         super::super::index_many(slice, indices)
     }
 
     fn index_many_mut<'a, T, const N: usize>(slice: &mut [T], indices: [usize; N]) -> [&mut T; N] {
-        let indices = UnsortedOptimizedIndices(indices);
+        let indices = UnsortedSpecializedIndices(indices);
         super::super::index_many_mut(slice, indices)
     }
 

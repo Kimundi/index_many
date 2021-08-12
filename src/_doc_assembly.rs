@@ -973,11 +973,11 @@ pub unsafe fn unwrap_result(slice: &mut [Elem], indices: [usize; LEN]) -> [&mut 
 ///
 /// # Assembly (x86_64)
 /// ```nasm
-/// codegen_crate::checked_unsorted_optimized_0:
+/// codegen_crate::checked_unsorted_specialized_0:
 /// ```
-pub unsafe fn checked_unsorted_optimized_0(
+pub unsafe fn checked_unsorted_specialized_0(
     slice: &mut [Elem],
-    indices: index_many::generic::UnsortedOptimizedIndices<0>,
+    indices: index_many::generic::UnsortedSpecializedIndices<0>,
 ) -> [&mut Elem; 0] {
     index_many::generic::index_many_mut(slice, indices)
 }
@@ -986,7 +986,7 @@ pub unsafe fn checked_unsorted_optimized_0(
 ///
 /// # Assembly (x86_64)
 /// ```nasm
-/// codegen_crate::checked_unsorted_optimized_1:
+/// codegen_crate::checked_unsorted_specialized_1:
 ///  sub     rsp, 40
 ///  cmp     r8, rdx
 ///  jae     .LBB0_1
@@ -1002,9 +1002,9 @@ pub unsafe fn checked_unsorted_optimized_0(
 ///  call    index_many::bound_check_failed
 ///  ud2
 /// ```
-pub unsafe fn checked_unsorted_optimized_1(
+pub unsafe fn checked_unsorted_specialized_1(
     slice: &mut [Elem],
-    indices: index_many::generic::UnsortedOptimizedIndices<1>,
+    indices: index_many::generic::UnsortedSpecializedIndices<1>,
 ) -> [&mut Elem; 1] {
     index_many::generic::index_many_mut(slice, indices)
 }
@@ -1013,7 +1013,7 @@ pub unsafe fn checked_unsorted_optimized_1(
 ///
 /// # Assembly (x86_64)
 /// ```nasm
-/// codegen_crate::checked_unsorted_optimized_2:
+/// codegen_crate::checked_unsorted_specialized_2:
 ///  push    rsi
 ///  sub     rsp, 48
 ///  mov     r10, rdx
@@ -1044,9 +1044,9 @@ pub unsafe fn checked_unsorted_optimized_1(
 ///  call    index_many::bound_check_failed
 ///  ud2
 /// ```
-pub unsafe fn checked_unsorted_optimized_2(
+pub unsafe fn checked_unsorted_specialized_2(
     slice: &mut [Elem],
-    indices: index_many::generic::UnsortedOptimizedIndices<2>,
+    indices: index_many::generic::UnsortedSpecializedIndices<2>,
 ) -> [&mut Elem; 2] {
     index_many::generic::index_many_mut(slice, indices)
 }
@@ -1055,7 +1055,7 @@ pub unsafe fn checked_unsorted_optimized_2(
 ///
 /// # Assembly (x86_64)
 /// ```nasm
-/// codegen_crate::checked_unsorted_optimized_3:
+/// codegen_crate::checked_unsorted_specialized_3:
 ///  sub     rsp, 56
 ///  mov     rax, qword, ptr, [r9]
 ///  mov     r10, qword, ptr, [r9, +, 8]
@@ -1090,9 +1090,9 @@ pub unsafe fn checked_unsorted_optimized_2(
 ///  call    index_many::bound_check_failed
 ///  ud2
 /// ```
-pub unsafe fn checked_unsorted_optimized_3(
+pub unsafe fn checked_unsorted_specialized_3(
     slice: &mut [Elem],
-    indices: index_many::generic::UnsortedOptimizedIndices<3>,
+    indices: index_many::generic::UnsortedSpecializedIndices<3>,
 ) -> [&mut Elem; 3] {
     index_many::generic::index_many_mut(slice, indices)
 }
@@ -1101,7 +1101,7 @@ pub unsafe fn checked_unsorted_optimized_3(
 ///
 /// # Assembly (x86_64)
 /// ```nasm
-/// codegen_crate::checked_unsorted_optimized_4:
+/// codegen_crate::checked_unsorted_specialized_4:
 ///  sub     rsp, 72
 ///  mov     rax, qword, ptr, [r9]
 ///  mov     r11, qword, ptr, [r9, +, 8]
@@ -1148,9 +1148,9 @@ pub unsafe fn checked_unsorted_optimized_3(
 ///  call    index_many::bound_check_failed
 ///  ud2
 /// ```
-pub unsafe fn checked_unsorted_optimized_4(
+pub unsafe fn checked_unsorted_specialized_4(
     slice: &mut [Elem],
-    indices: index_many::generic::UnsortedOptimizedIndices<4>,
+    indices: index_many::generic::UnsortedSpecializedIndices<4>,
 ) -> [&mut Elem; 4] {
     index_many::generic::index_many_mut(slice, indices)
 }
