@@ -148,6 +148,7 @@ fn main() {
     }
 
     println!("Writing to docs of crate...");
+    let doc_module = format!("{}\n", doc_module.trim());
     std::fs::write(crate_path.join("src").join(doc_assembly_path), doc_module).unwrap();
     run_raw("cargo fmt", &crate_path, false);
 
