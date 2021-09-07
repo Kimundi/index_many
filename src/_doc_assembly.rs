@@ -7,6 +7,8 @@ use crate::*;
 use simple_result::{GetManyError, GetManyErrorKind};
 #[allow(unused_imports)]
 use std::ops::Range;
+#[allow(unused_imports)]
+use std_proposal::{Error, ErrorKind, ErrorNiche, ErrorSimple};
 pub type Elem = usize;
 pub const LEN: usize = 3;
 
@@ -239,85 +241,78 @@ pub unsafe fn result_simple(
 /// # Assembly (x86_64)
 /// ```x86asm
 /// codegen_crate::result_kind:
-///  sub     rsp, 72
+///  sub     rsp, 40
 ///  mov     rax, rcx
-///  mov     r10, qword, ptr, [r9]
-///  mov     r11, qword, ptr, [r9, +, 8]
-///  mov     rcx, qword, ptr, [r9, +, 16]
-///  cmp     rcx, r8
+///  mov     rcx, qword, ptr, [r9]
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     r9, qword, ptr, [r9, +, 16]
+///  cmp     r9, r8
 ///  jae     .LBB0_4
-///  cmp     r10, r11
+///  cmp     rcx, r10
 ///  jae     .LBB0_4
-///  cmp     r11, rcx
+///  cmp     r10, r9
 ///  jae     .LBB0_4
-///  lea     r8, [rdx, +, 8*r10]
-///  lea     r9, [rdx, +, 8*r11]
 ///  lea     rcx, [rdx, +, 8*rcx]
-///  mov     qword, ptr, [rax, +, 8], r8
-///  mov     qword, ptr, [rax, +, 16], r9
-///  mov     qword, ptr, [rax, +, 24], rcx
+///  lea     r8, [rdx, +, 8*r10]
+///  lea     rdx, [rdx, +, 8*r9]
+///  mov     qword, ptr, [rax, +, 8], rcx
+///  mov     qword, ptr, [rax, +, 16], r8
+///  mov     qword, ptr, [rax, +, 24], rdx
 ///  xor     ecx, ecx
 ///  mov     qword, ptr, [rax], rcx
-///  add     rsp, 72
+///  add     rsp, 40
 ///  ret
 /// .LBB0_4:
-///  mov     qword, ptr, [rsp, +, 40], r10
-///  mov     qword, ptr, [rsp, +, 48], r11
-///  mov     qword, ptr, [rsp, +, 56], rcx
-///  mov     qword, ptr, [rsp, +, 64], r8
-///  cmp     r10, r11
-///  jne     .LBB0_7
+///  cmp     rcx, r10
+///  jne     .LBB0_9
 ///  xor     edx, edx
 /// .LBB0_6:
-///  lea     r9, [rdx, +, 1]
+///  lea     r10, [rdx, +, 1]
 ///  mov     ecx, 2
-///  jmp     .LBB0_10
-/// .LBB0_7:
-///  cmp     r10, r11
-///  jbe     .LBB0_11
-///  mov     r9d, 1
-///  xor     edx, edx
+///  jmp     .LBB0_12
 /// .LBB0_9:
+///  cmp     rcx, r10
+///  jbe     .LBB0_17
+///  xor     edx, edx
+/// .LBB0_11:
+///  lea     r10, [rdx, +, 1]
 ///  mov     ecx, 1
-/// .LBB0_10:
+/// .LBB0_12:
 ///  mov     qword, ptr, [rax, +, 8], rcx
 ///  mov     qword, ptr, [rax, +, 16], rdx
-///  mov     qword, ptr, [rax, +, 24], r9
+///  mov     qword, ptr, [rax, +, 24], r10
 ///  mov     qword, ptr, [rax, +, 32], r8
 ///  mov     ecx, 1
 ///  mov     qword, ptr, [rax], rcx
-///  add     rsp, 72
+///  add     rsp, 40
 ///  ret
-/// .LBB0_11:
+/// .LBB0_17:
 ///  mov     edx, 1
-///  cmp     r11, qword, ptr, [rsp, +, 56]
+///  cmp     r10, r9
 ///  je      .LBB0_6
 ///  mov     edx, 1
-///  mov     r9d, 2
-///  ja      .LBB0_9
-///  mov     r9, qword, ptr, [rsp, +, 40]
-///  cmp     r9, r8
-///  jae     .LBB0_17
-///  mov     r9, qword, ptr, [rsp, +, 48]
-///  cmp     r9, r8
-///  jae     .LBB0_18
-///  mov     r9, qword, ptr, [rsp, +, 56]
-///  cmp     r9, r8
-///  jb      .LBB0_19
+///  ja      .LBB0_11
+///  cmp     rcx, r8
+///  jae     .LBB0_8
+///  cmp     r10, r8
 ///  mov     edx, 2
+///  adc     rdx, -1
 ///  xor     ecx, ecx
-///  jmp     .LBB0_10
-/// .LBB0_17:
-///  xor     edx, edx
-/// .LBB0_18:
-///  xor     ecx, ecx
-///  jmp     .LBB0_10
-/// .LBB0_19:
+///  cmp     r10, r8
+///  cmovb   r10, r9
+///  jae     .LBB0_12
+///  cmp     r9, r8
+///  jae     .LBB0_12
 ///  lea     rcx, [rip, +, __unnamed_1]
 ///  lea     r8, [rip, +, __unnamed_2]
 ///  mov     edx, 40
 ///  call    core::panicking::panic
 ///  ud2
+/// .LBB0_8:
+///  xor     edx, edx
+///  mov     r10, rcx
+///  xor     ecx, ecx
+///  jmp     .LBB0_12
 /// ```
 pub unsafe fn result_kind(
     slice: &mut [Elem],
@@ -1191,4 +1186,454 @@ pub unsafe fn checked_unsorted_specialized_4(
     indices: generic::UnsortedSpecializedIndices<4>,
 ) -> [&mut Elem; 4] {
     generic::index_many_mut(slice, indices)
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_opt(slice, indices) }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_option:
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     rcx, qword, ptr, [r9, +, 16]
+///  cmp     rcx, r10
+///  je      .LBB0_7
+///  mov     r9, qword, ptr, [r9]
+///  cmp     rcx, r9
+///  je      .LBB0_7
+///  cmp     rcx, r8
+///  jae     .LBB0_7
+///  cmp     r10, r9
+///  je      .LBB0_7
+///  cmp     r9, r8
+///  jae     .LBB0_7
+///  cmp     r10, r8
+///  jae     .LBB0_7
+///  lea     r8, [rdx, +, 8*r9]
+///  lea     r9, [rdx, +, 8*r10]
+///  lea     rcx, [rdx, +, 8*rcx]
+///  mov     qword, ptr, [rax], r8
+///  mov     qword, ptr, [rax, +, 8], r9
+///  mov     qword, ptr, [rax, +, 16], rcx
+///  ret
+/// .LBB0_7:
+///  mov     qword, ptr, [rax], 0
+///  ret
+/// ```
+pub unsafe fn std_option(slice: &mut [Elem], indices: [usize; LEN]) -> Option<[&mut Elem; LEN]> {
+    std_proposal::SliceExt::get_many_mut_opt(slice, indices)
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_opt(slice, indices).unwrap() }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_option_unwrap:
+///  sub     rsp, 40
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     r11, qword, ptr, [r9, +, 16]
+///  cmp     r11, r10
+///  je      .LBB0_6
+///  mov     rax, qword, ptr, [r9]
+///  cmp     r11, rax
+///  je      .LBB0_6
+///  cmp     r11, r8
+///  jae     .LBB0_6
+///  cmp     r10, rax
+///  je      .LBB0_6
+///  cmp     rax, r8
+///  jae     .LBB0_6
+///  cmp     r10, r8
+///  jae     .LBB0_6
+///  lea     rax, [rdx, +, 8*rax]
+///  lea     r8, [rdx, +, 8*r10]
+///  lea     rdx, [rdx, +, 8*r11]
+///  mov     qword, ptr, [rcx], rax
+///  mov     qword, ptr, [rcx, +, 8], r8
+///  mov     qword, ptr, [rcx, +, 16], rdx
+///  mov     rax, rcx
+///  add     rsp, 40
+///  ret
+/// .LBB0_6:
+///  lea     rcx, [rip, +, __unnamed_1]
+///  lea     r8, [rip, +, __unnamed_2]
+///  mov     edx, 43
+///  call    core::panicking::panic
+///  ud2
+/// ```
+pub unsafe fn std_option_unwrap(slice: &mut [Elem], indices: [usize; LEN]) -> [&mut Elem; LEN] {
+    std_proposal::SliceExt::get_many_mut_opt(slice, indices).unwrap()
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_res_simple(slice, indices) }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_result_simple:
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     rcx, qword, ptr, [r9, +, 16]
+///  cmp     rcx, r10
+///  je      .LBB0_7
+///  mov     r9, qword, ptr, [r9]
+///  cmp     rcx, r9
+///  je      .LBB0_7
+///  cmp     rcx, r8
+///  jae     .LBB0_7
+///  cmp     r10, r9
+///  je      .LBB0_7
+///  cmp     r9, r8
+///  jae     .LBB0_7
+///  cmp     r10, r8
+///  jae     .LBB0_7
+///  lea     r8, [rdx, +, 8*r9]
+///  lea     r9, [rdx, +, 8*r10]
+///  lea     rcx, [rdx, +, 8*rcx]
+///  mov     qword, ptr, [rax], r8
+///  mov     qword, ptr, [rax, +, 8], r9
+///  mov     qword, ptr, [rax, +, 16], rcx
+///  ret
+/// .LBB0_7:
+///  mov     qword, ptr, [rax], 0
+///  ret
+/// ```
+pub unsafe fn std_result_simple(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Result<[&mut Elem; LEN], ErrorSimple<LEN>> {
+    std_proposal::SliceExt::get_many_mut_res_simple(slice, indices)
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_res_simple(slice, indices).ok() }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_result_simple_option:
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     rcx, qword, ptr, [r9, +, 16]
+///  cmp     rcx, r10
+///  je      .LBB0_7
+///  mov     r9, qword, ptr, [r9]
+///  cmp     rcx, r9
+///  je      .LBB0_7
+///  cmp     rcx, r8
+///  jae     .LBB0_7
+///  cmp     r10, r9
+///  je      .LBB0_7
+///  cmp     r9, r8
+///  jae     .LBB0_7
+///  cmp     r10, r8
+///  jae     .LBB0_7
+///  lea     r8, [rdx, +, 8*r9]
+///  lea     r9, [rdx, +, 8*r10]
+///  lea     rcx, [rdx, +, 8*rcx]
+///  mov     qword, ptr, [rax], r8
+///  mov     qword, ptr, [rax, +, 8], r9
+///  mov     qword, ptr, [rax, +, 16], rcx
+///  ret
+/// .LBB0_7:
+///  mov     qword, ptr, [rax], 0
+///  ret
+/// ```
+pub unsafe fn std_result_simple_option(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Option<[&mut Elem; LEN]> {
+    std_proposal::SliceExt::get_many_mut_res_simple(slice, indices).ok()
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_res_simple(slice, indices).unwrap() }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_result_simple_unwrap:
+///  sub     rsp, 56
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     r11, qword, ptr, [r9, +, 16]
+///  cmp     r11, r10
+///  je      .LBB2_6
+///  mov     rax, qword, ptr, [r9]
+///  cmp     r11, rax
+///  je      .LBB2_6
+///  cmp     r11, r8
+///  jae     .LBB2_6
+///  cmp     r10, rax
+///  je      .LBB2_6
+///  cmp     rax, r8
+///  jae     .LBB2_6
+///  cmp     r10, r8
+///  jae     .LBB2_6
+///  lea     rax, [rdx, +, 8*rax]
+///  lea     r8, [rdx, +, 8*r10]
+///  lea     rdx, [rdx, +, 8*r11]
+///  mov     qword, ptr, [rcx], rax
+///  mov     qword, ptr, [rcx, +, 8], r8
+///  mov     qword, ptr, [rcx, +, 16], rdx
+///  mov     rax, rcx
+///  add     rsp, 56
+///  ret
+/// .LBB2_6:
+///  lea     rax, [rip, +, __unnamed_2]
+///  mov     qword, ptr, [rsp, +, 32], rax
+///  lea     rcx, [rip, +, __unnamed_3]
+///  lea     r9, [rip, +, __unnamed_4]
+///  lea     r8, [rsp, +, 48]
+///  mov     edx, 43
+///  call    core::result::unwrap_failed
+///  ud2
+/// ```
+pub unsafe fn std_result_simple_unwrap(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> [&mut Elem; LEN] {
+    std_proposal::SliceExt::get_many_mut_res_simple(slice, indices).unwrap()
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_res_direct(slice, indices) }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_result_direct:
+///  mov     rcx, qword, ptr, [r9]
+///  xor     r10d, r10d
+///  cmp     rcx, r8
+///  jae     .LBB0_5
+///  mov     r11, qword, ptr, [r9, +, 8]
+///  cmp     r11, r8
+///  jae     .LBB0_5
+///  mov     r10b, 1
+///  cmp     r11, rcx
+///  je      .LBB0_5
+///  mov     r9, qword, ptr, [r9, +, 16]
+///  cmp     r9, r8
+///  jae     .LBB0_4
+///  cmp     r9, rcx
+///  je      .LBB0_5
+///  cmp     r9, r11
+///  je      .LBB0_5
+///  lea     rcx, [rdx, +, 8*rcx]
+///  lea     r8, [rdx, +, 8*r11]
+///  lea     rdx, [rdx, +, 8*r9]
+///  mov     qword, ptr, [rax, +, 8], rcx
+///  mov     qword, ptr, [rax, +, 16], r8
+///  mov     qword, ptr, [rax, +, 24], rdx
+///  xor     ecx, ecx
+///  mov     byte, ptr, [rax], cl
+///  ret
+/// .LBB0_4:
+///  xor     r10d, r10d
+/// .LBB0_5:
+///  mov     byte, ptr, [rax, +, 1], r10b
+///  mov     cl, 1
+///  mov     byte, ptr, [rax], cl
+///  ret
+/// ```
+pub unsafe fn std_result_direct(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Result<[&mut Elem; LEN], ErrorKind> {
+    std_proposal::SliceExt::get_many_mut_res_direct(slice, indices)
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_res_direct(slice, indices).ok() }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_result_direct_option:
+///  mov     r10, qword, ptr, [r9]
+///  cmp     r10, r8
+///  jae     .LBB0_7
+///  mov     rcx, qword, ptr, [r9, +, 8]
+///  cmp     rcx, r8
+///  jae     .LBB0_7
+///  cmp     rcx, r10
+///  je      .LBB0_7
+///  mov     r9, qword, ptr, [r9, +, 16]
+///  cmp     r9, r8
+///  jae     .LBB0_7
+///  cmp     r9, r10
+///  je      .LBB0_7
+///  cmp     r9, rcx
+///  je      .LBB0_7
+///  lea     r8, [rdx, +, 8*r10]
+///  lea     rcx, [rdx, +, 8*rcx]
+///  lea     rdx, [rdx, +, 8*r9]
+///  mov     qword, ptr, [rax], r8
+///  mov     qword, ptr, [rax, +, 8], rcx
+///  mov     qword, ptr, [rax, +, 16], rdx
+///  ret
+/// .LBB0_7:
+///  mov     qword, ptr, [rax], 0
+///  ret
+/// ```
+pub unsafe fn std_result_direct_option(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Option<[&mut Elem; LEN]> {
+    std_proposal::SliceExt::get_many_mut_res_direct(slice, indices).ok()
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_res_indirect(slice, indices) }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_result_indirect:
+///  mov     r11, qword, ptr, [r9]
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     rcx, qword, ptr, [r9, +, 16]
+///  cmp     rcx, r10
+///  je      .LBB0_7
+///  cmp     rcx, r11
+///  je      .LBB0_7
+///  cmp     rcx, r8
+///  jae     .LBB0_7
+///  cmp     r10, r11
+///  je      .LBB0_7
+///  cmp     r11, r8
+///  jae     .LBB0_7
+///  cmp     r10, r8
+///  jae     .LBB0_7
+///  lea     r8, [rdx, +, 8*r11]
+///  lea     r9, [rdx, +, 8*r10]
+///  lea     rcx, [rdx, +, 8*rcx]
+///  mov     qword, ptr, [rax, +, 8], r8
+///  mov     qword, ptr, [rax, +, 16], r9
+///  mov     qword, ptr, [rax, +, 24], rcx
+///  xor     ecx, ecx
+///  mov     qword, ptr, [rax], rcx
+///  ret
+/// .LBB0_7:
+///  mov     qword, ptr, [rax, +, 8], r11
+///  mov     qword, ptr, [rax, +, 16], r10
+///  mov     qword, ptr, [rax, +, 24], rcx
+///  mov     qword, ptr, [rax, +, 32], r8
+///  mov     ecx, 1
+///  mov     qword, ptr, [rax], rcx
+///  ret
+/// ```
+pub unsafe fn std_result_indirect(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Result<[&mut Elem; LEN], Error<LEN>> {
+    std_proposal::SliceExt::get_many_mut_res_indirect(slice, indices)
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_res_indirect(slice, indices).ok() }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_result_indirect_option:
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     rcx, qword, ptr, [r9, +, 16]
+///  cmp     rcx, r10
+///  je      .LBB0_7
+///  mov     r9, qword, ptr, [r9]
+///  cmp     rcx, r9
+///  je      .LBB0_7
+///  cmp     rcx, r8
+///  jae     .LBB0_7
+///  cmp     r10, r9
+///  je      .LBB0_7
+///  cmp     r9, r8
+///  jae     .LBB0_7
+///  cmp     r10, r8
+///  jae     .LBB0_7
+///  lea     r8, [rdx, +, 8*r9]
+///  lea     r9, [rdx, +, 8*r10]
+///  lea     rcx, [rdx, +, 8*rcx]
+///  mov     qword, ptr, [rax], r8
+///  mov     qword, ptr, [rax, +, 8], r9
+///  mov     qword, ptr, [rax, +, 16], rcx
+///  ret
+/// .LBB0_7:
+///  mov     qword, ptr, [rax], 0
+///  ret
+/// ```
+pub unsafe fn std_result_indirect_option(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Option<[&mut Elem; LEN]> {
+    std_proposal::SliceExt::get_many_mut_res_indirect(slice, indices).ok()
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_res_indirect_niche(slice, indices) }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_result_indirect_niche:
+///  mov     r11, qword, ptr, [r9]
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     rcx, qword, ptr, [r9, +, 16]
+///  cmp     rcx, r10
+///  je      .LBB0_7
+///  cmp     rcx, r11
+///  je      .LBB0_7
+///  cmp     rcx, r8
+///  jae     .LBB0_7
+///  cmp     r10, r11
+///  je      .LBB0_7
+///  cmp     r11, r8
+///  jae     .LBB0_7
+///  cmp     r10, r8
+///  jae     .LBB0_7
+///  lea     r8, [rdx, +, 8*r11]
+///  lea     r9, [rdx, +, 8*r10]
+///  lea     rcx, [rdx, +, 8*rcx]
+///  mov     qword, ptr, [rax, +, 8], r8
+///  mov     qword, ptr, [rax, +, 16], r9
+///  mov     qword, ptr, [rax, +, 24], rcx
+///  xor     ecx, ecx
+///  mov     qword, ptr, [rax], rcx
+///  ret
+/// .LBB0_7:
+///  mov     qword, ptr, [rax, +, 8], r11
+///  mov     qword, ptr, [rax, +, 16], r10
+///  mov     qword, ptr, [rax, +, 24], rcx
+///  add     r8, 2
+///  mov     qword, ptr, [rax, +, 32], r8
+///  mov     ecx, 1
+///  mov     qword, ptr, [rax], rcx
+///  ret
+/// ```
+pub unsafe fn std_result_indirect_niche(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Result<[&mut Elem; LEN], ErrorNiche<LEN>> {
+    std_proposal::SliceExt::get_many_mut_res_indirect_niche(slice, indices)
+}
+
+/// Body: `{ std_proposal::SliceExt::get_many_mut_res_indirect_niche(slice, indices).ok() }`
+///
+/// # Assembly (x86_64)
+/// ```x86asm
+/// codegen_crate::std_result_indirect_niche_option:
+///  mov     r10, qword, ptr, [r9, +, 8]
+///  mov     rcx, qword, ptr, [r9, +, 16]
+///  cmp     rcx, r10
+///  je      .LBB0_7
+///  mov     r9, qword, ptr, [r9]
+///  cmp     rcx, r9
+///  je      .LBB0_7
+///  cmp     rcx, r8
+///  jae     .LBB0_7
+///  cmp     r10, r9
+///  je      .LBB0_7
+///  cmp     r9, r8
+///  jae     .LBB0_7
+///  cmp     r10, r8
+///  jae     .LBB0_7
+///  lea     r8, [rdx, +, 8*r9]
+///  lea     r9, [rdx, +, 8*r10]
+///  lea     rcx, [rdx, +, 8*rcx]
+///  mov     qword, ptr, [rax], r8
+///  mov     qword, ptr, [rax, +, 8], r9
+///  mov     qword, ptr, [rax, +, 16], rcx
+///  ret
+/// .LBB0_7:
+///  mov     qword, ptr, [rax], 0
+///  ret
+/// ```
+pub unsafe fn std_result_indirect_niche_option(
+    slice: &mut [Elem],
+    indices: [usize; LEN],
+) -> Option<[&mut Elem; LEN]> {
+    std_proposal::SliceExt::get_many_mut_res_indirect_niche(slice, indices).ok()
 }

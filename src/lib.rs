@@ -2,6 +2,7 @@
 #![feature(slice_ptr_get)]
 #![feature(is_sorted)]
 #![feature(unchecked_math)]
+#![feature(rustc_attrs)]
 #![doc = include_str!("../README.md")]
 
 use std::{array::IntoIter, mem::MaybeUninit, slice::SliceIndex};
@@ -11,6 +12,7 @@ pub mod generic;
 pub mod simple;
 pub mod simple_result;
 pub mod slice_index;
+pub mod std_proposal;
 
 unsafe fn get_many_internal<'a, T, I: SliceIndex<[T]>, const N: usize>(
     slice: *const [T],

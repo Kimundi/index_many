@@ -29,6 +29,12 @@ fn clear_asm(p: &Path) {
 }
 
 fn main() {
+    let args: Vec<_> = std::env::args().collect();
+    let asm_style = args
+        .get(1)
+        .map(|opt| format!("--asm-style={}", opt))
+        .unwrap_or_default();
+
     let codegen_crate_name = "codegen_crate";
     let doc_assembly_path = Path::new("_doc_assembly.rs");
 
@@ -84,13 +90,23 @@ fn main() {
 
     let mut duplicates = HashMap::new();
 
-    for (gi, &(i, name, source, body)) in codegen_test::FUNCTIONS.iter().enumerate() {
+    for (gi, function) in codegen_test::FUNCTIONS.iter().enumerate() {
+        let codegen_test::Function {
+            id,
+            name,
+            full_item_source: source,
+            body_source: body,
+        } = *function;
+
         println!("Check {}...", name);
         let code = format!("use {}::*;\n{}\n{}", crate_name, header, source);
         std::fs::write(tempdir.join("src").join("lib.rs"), code).unwrap();
         run_raw("cargo fmt", &tempdir, false);
 
-        let s = format!(r"cargo asm {}::{} --no-color", codegen_crate_name, name);
+        let s = format!(
+            r"cargo asm {}::{} --no-color {}",
+            codegen_crate_name, name, asm_style
+        );
         let out = run_raw(&s, &tempdir, true);
 
         let asm = match out.status.exit_ok() {
@@ -98,7 +114,7 @@ fn main() {
                 let asm = String::from_utf8(out.stdout).unwrap();
 
                 let v: &mut Vec<_> = duplicates.entry(asm.replace(name, "<name>")).or_default();
-                v.push((gi, i, name));
+                v.push((gi, id, name));
 
                 doc_module.push_str(&format!(
                     r##"
@@ -127,7 +143,7 @@ fn main() {
             }
         };
 
-        std::fs::write(output_dir.join(format!("{}_{}.asm", i, name)), asm).unwrap();
+        std::fs::write(output_dir.join(format!("{}_{}.asm", id, name)), asm).unwrap();
     }
 
     let mut duplicates_vec = Vec::new();

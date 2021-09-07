@@ -23,18 +23,30 @@ macro_rules! generate {
             ),*) -> $ret $blk
         )*
 
+        pub struct Function {
+            pub id: i32,
+            pub name: &'static str,
+            pub full_item_source: &'static str,
+            pub body_source: &'static str,
+        }
+
         pub const HEADER: &str = stringify!(
             $(
                 $item
             )*
         );
-        pub const FUNCTIONS: &[(i32, &'static str, &'static str, &'static str)] = &[
+        pub const FUNCTIONS: &[Function] = &[
             $(
-                ($id, stringify!($name), stringify!(
-                    pub unsafe fn $name($(
-                        $arg: $argty
-                    ),*) -> $ret $blk
-                ), stringify!($blk)),
+                Function {
+                    id: $id,
+                    name: stringify!($name),
+                    full_item_source: stringify!(
+                        pub unsafe fn $name($(
+                            $arg: $argty
+                        ),*) -> $ret $blk
+                    ),
+                    body_source: stringify!($blk),
+                },
             )*
         ];
     }
@@ -47,6 +59,9 @@ generate! {
 
         #[allow(unused_imports)]
         use simple_result::{GetManyError, GetManyErrorKind};
+
+        #[allow(unused_imports)]
+        use std_proposal::{ErrorKind, Error, ErrorNiche, ErrorSimple};
 
         pub type Elem = usize;
         pub const LEN: usize = 3;
@@ -100,6 +115,7 @@ generate! {
     ) -> Option<[&mut Elem; LEN]> {
         simple_result::get_many_mut(slice, indices).ok()
     }
+
 
 
     2: fn checked_simple(
@@ -244,5 +260,76 @@ generate! {
         indices: generic::UnsortedSpecializedIndices<4>,
     ) -> [&mut Elem; 4] {
         generic::index_many_mut(slice, indices)
+    }
+
+    6: fn std_option(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> Option<[&mut Elem; LEN]> {
+        std_proposal::SliceExt::get_many_mut_opt(slice, indices)
+    }
+    6: fn std_option_unwrap(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> [&mut Elem; LEN] {
+        std_proposal::SliceExt::get_many_mut_opt(slice, indices).unwrap()
+    }
+
+    6: fn std_result_simple(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> Result<[&mut Elem; LEN], ErrorSimple<LEN>> {
+        std_proposal::SliceExt::get_many_mut_res_simple(slice, indices)
+    }
+    6: fn std_result_simple_option(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> Option<[&mut Elem; LEN]> {
+        std_proposal::SliceExt::get_many_mut_res_simple(slice, indices).ok()
+    }
+    6: fn std_result_simple_unwrap(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> [&mut Elem; LEN] {
+        std_proposal::SliceExt::get_many_mut_res_simple(slice, indices).unwrap()
+    }
+
+    6: fn std_result_direct(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> Result<[&mut Elem; LEN], ErrorKind> {
+        std_proposal::SliceExt::get_many_mut_res_direct(slice, indices)
+    }
+    6: fn std_result_direct_option(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> Option<[&mut Elem; LEN]> {
+        std_proposal::SliceExt::get_many_mut_res_direct(slice, indices).ok()
+    }
+
+    6: fn std_result_indirect(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> Result<[&mut Elem; LEN], Error<LEN>> {
+        std_proposal::SliceExt::get_many_mut_res_indirect(slice, indices)
+    }
+    6: fn std_result_indirect_option(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> Option<[&mut Elem; LEN]> {
+        std_proposal::SliceExt::get_many_mut_res_indirect(slice, indices).ok()
+    }
+
+    6: fn std_result_indirect_niche(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> Result<[&mut Elem; LEN], ErrorNiche<LEN>> {
+        std_proposal::SliceExt::get_many_mut_res_indirect_niche(slice, indices)
+    }
+    6: fn std_result_indirect_niche_option(
+        slice: &mut [Elem],
+        indices: [usize; LEN],
+    ) -> Option<[&mut Elem; LEN]> {
+        std_proposal::SliceExt::get_many_mut_res_indirect_niche(slice, indices).ok()
     }
 }
