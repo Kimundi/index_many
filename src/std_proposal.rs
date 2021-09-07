@@ -130,12 +130,8 @@ fn get_many_check_valid<const N: usize>(indices: &[usize; N], len: usize) -> boo
 
 // NB: The N here is there to be forward-compatible with adding more details
 // to the error later
+#[derive(Debug)]
 pub struct ErrorSimple<const N: usize>;
-impl<const N: usize> std::fmt::Debug for ErrorSimple<N> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("GetManyMutError").finish()
-    }
-}
 
 pub struct Error<const N: usize> {
     indices: [usize; N],
@@ -178,3 +174,5 @@ fn get_many_check_valid_kinds<const N: usize>(
     }
     Ok(())
 }
+
+// TODO: write tests
